@@ -1,0 +1,217 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ScrollView
+} from 'react-native';
+ 
+export default function App() {
+  const [step, setStep] = useState<'login' | 'otp' | 'dashboard'>('login');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+ 
+  /* ---------------- LOGIN ---------------- */
+  const handleLogin = () => {
+    if (phone.length !== 10) {
+      Alert.alert('Error', 'Enter a valid 10-digit mobile number');
+      return;
+    }
+    setStep('otp');
+  };
+ 
+  / OTP /
+  const handleVerifyOtp = () => {
+    if (otp !== '1234') {
+      Alert.alert('Invalid OTP', 'Use 1234 for demo');
+      return;
+    }
+    setStep('dashboard');
+  };
+ 
+  / DASHBOARD CARD CLICK /
+  const handleCardPress = (title: string) => {
+    Alert.alert(title, 'This feature will be implemented soon');
+  };
+ 
+  / LOGIN SCREEN /
+  if (step === 'login') {
+    return (
+      <View style={styles.blueContainer}>
+        <Text style={styles.appTitle}>MyGate</Text>
+        <Text style={styles.subtitle}>Secure Society Living</Text>
+ 
+        <TextInput
+          style={styles.input}
+          placeholder="Mobile Number"
+          placeholderTextColor="#999"
+          keyboardType="number-pad"
+          maxLength={10}
+          value={phone}
+          onChangeText={setPhone}
+        />
+ 
+        <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
+          <Text style={styles.primaryButtonText}>Send OTP</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+ 
+  /OTP SCREEN/
+  if (step === 'otp') {
+    return (
+      <View style={styles.blueContainer}>
+        <Text style={styles.appTitle}>OTP Verification</Text>
+        <Text style={styles.subtitle}>
+          Enter the OTP sent to {phone}
+        </Text>
+ 
+        <TextInput
+          style={styles.input}
+          placeholder="Enter OTP"
+          placeholderTextColor="#999"
+          keyboardType="number-pad"
+          maxLength={4}
+          value={otp}
+          onChangeText={setOtp}
+        />
+ 
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={handleVerifyOtp}
+        >
+          <Text style={styles.primaryButtonText}>Verify OTP</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+ 
+  / DASHBOARD/
+  return (
+    <ScrollView style={styles.dashboardContainer}>
+      <Text style={styles.dashboardTitle}>Welcome to MyGate</Text>
+      <Text style={styles.dashboardSubtitle}>
+        Choose an option to continue
+      </Text>
+ 
+      <View style={styles.grid}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleCardPress('Visitors')}
+        >
+          <Text style={styles.cardTitle}>Visitors</Text>
+          <Text style={styles.cardText}>Approve & manage visitors</Text>
+        </TouchableOpacity>
+ 
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleCardPress('Bills')}
+        >
+          <Text style={styles.cardTitle}>Bills</Text>
+          <Text style={styles.cardText}>View maintenance bills</Text>
+        </TouchableOpacity>
+ 
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleCardPress('Complaints')}
+        >
+          <Text style={styles.cardTitle}>Complaints</Text>
+          <Text style={styles.cardText}>Raise society issues</Text>
+        </TouchableOpacity>
+ 
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => handleCardPress('Vehicles')}
+        >
+          <Text style={styles.cardTitle}>Vehicles</Text>
+          <Text style={styles.cardText}>Manage vehicle access</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
+}
+ 
+//STYLES/
+ 
+const styles = StyleSheet.create({
+  /* SHARED BLUE SCREENS */
+  blueContainer: {
+    flex: 1,
+    backgroundColor: '#0a1f44',
+    justifyContent: 'center',
+    padding: 25,
+  },
+  appTitle: {
+    color: 'white',
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  subtitle: {
+    color: '#cfd8ff',
+    marginBottom: 30,
+    fontSize: 16,
+  },
+  input: {
+    backgroundColor: 'white',
+    padding: 14,
+    borderRadius: 10,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  primaryButton: {
+    backgroundColor: '#ffd400',
+    padding: 15,
+    borderRadius: 30,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+ 
+  /* DASHBOARD */
+  dashboardContainer: {
+    flex: 1,
+    backgroundColor: '#0a1f44',
+    padding: 20,
+  },
+  dashboardTitle: {
+    color: 'white',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
+  dashboardSubtitle: {
+    color: '#cfd8ff',
+    marginBottom: 25,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  card: {
+    backgroundColor: 'white',
+    width: '48%',
+    padding: 18,
+    borderRadius: 14,
+    marginBottom: 15,
+    elevation: 4,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0a1f44',
+  },
+  cardText: {
+    marginTop: 6,
+    color: '#555',
+    fontSize: 13,
+  },
+});
