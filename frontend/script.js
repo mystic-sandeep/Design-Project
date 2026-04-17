@@ -6,9 +6,64 @@ let statsData = {
   verified: 4
 };
 
+// ============= LOGIN FLOW =============
+
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const role = document.getElementById('loginRole').value;
+    
+    if (!email) {
+        showLoginError("Email required");
+        return;
+    }
+    
+    const result = await jwtLogin(email, password, role);
+    
+    if (result.success) {
+        // Hide login, show app
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        
+        // Show user info
+        document.getElementById('userEmail').textContent = result.user.email;
+        document.getElementById('userRole').textContent = result.user.role;
+        
+        updateStats(); // Load dashboard
+        console.log("✅ Dashboard loaded");
+    } else {
+        showLoginError(result.message);
+    }
+}
+
+function handleLogout() {
+    if (confirm("Are you sure you want to logout?")) {
+        logout();
+    }
+}
+
+function showLoginError(message) {
+    const errorEl = document.getElementById('loginError');
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+    setTimeout(() => {
+        errorEl.style.display = 'none';
+    }, 5000);
+}
+
+// ============= DASHBOARD FUNCTIONS =============
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-  updateStats();
+  // Check if already logged in
+  const storedToken = getStoredToken();
+  if (storedToken) {
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('userEmail').textContent = currentUser.email;
+    document.getElementById('userRole').textContent = currentUser.role;
+    updateStats();
+  }
 });
 
 function updateStats() {
@@ -49,46 +104,74 @@ function hideAllSections() {
   });
 }
 
-function approveGuest() {
+// ============= API CALLS WITH JWT =============
+
+async function approveGuest() {
   const residentId = document.getElementById('residentId').value;
   const name = document.getElementById('name').value;
   const phone = document.getElementById('phone').value;
   const purpose = document.getElementById('purpose').value;
   
   if (!residentId || !name || !phone) {
-    showResult('approveResult', 'Please fill all required fields', 'error');
+    showResult('approveResult', '❌ Please fill all required fields', 'error');
     return;
   }
   
-  // Simulate API call
-  setTimeout(() => {
-    showResult('approveResult', `✅ Guest "${name}" approved for ${purpose}! Passcode: ${Math.floor(100000 + Math.random() * 900000)}`, 'success');
-    statsData.approvedToday++;
-    statsData.totalGuests++;
-    updateStats();
-    clearForm();
-  }, 1000);
+  try {
+    // Use secured endpoint with JWT
+    const response = await authenticatedFetch('/api/v1/guests/approve', {
+      method: 'POST',
+      body: JSON.stringify({ residentId, name, phone, purpose })
+    });
+    
+    if (!response) return; // Token expired
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showResult('approveResult', `✅ Guest "${name}" approved!\n\n📝 Pass Code: ${data.passCode}\n\n🔐 Requested by: ${data.requestedBy}`, 'success');
+      statsData.approvedToday++;
+      statsData.totalGuests++;
+      updateStats();
+      clearForm();
+    } else {
+      showResult('approveResult', `❌ ${data.error}`, 'error');
+    }
+  } catch (error) {
+    showResult('approveResult', `❌ Error: ${error.message}`, 'error');
+  }
 }
 
-function verifyGuest() {
+async function verifyGuest() {
   const passCode = document.getElementById('passCode').value;
   
   if (!passCode) {
-    showResult('verifyResult', 'Please enter passcode', 'error');
+    showResult('verifyResult', '❌ Please enter passcode', 'error');
     return;
   }
   
-  // Simulate verification
-  setTimeout(() => {
-    if (passCode.length === 6) {
-      showResult('verifyResult', '✅ Guest entry verified successfully!', 'success');
+  try {
+    // Use secured endpoint with JWT
+    const response = await authenticatedFetch('/api/v1/guests/verify', {
+      method: 'POST',
+      body: JSON.stringify({ passCode })
+    });
+    
+    if (!response) return; // Token expired
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showResult('verifyResult', `✅ Guest entry verified successfully!\n\n👤 Guest: ${data.guest.name}\n🔐 Verified by: ${data.verifiedBy}`, 'success');
       statsData.verified++;
       updateStats();
       document.getElementById('passCode').value = '';
     } else {
-      showResult('verifyResult', '❌ Invalid passcode', 'error');
+      showResult('verifyResult', `❌ ${data.error}`, 'error');
     }
-  }, 800);
+  } catch (error) {
+    showResult('verifyResult', `❌ Error: ${error.message}`, 'error');
+  }
 }
 
 function showResult(elementId, message, type) {

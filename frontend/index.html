@@ -2,18 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MyGate Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyGate - Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="app">
-
-  <!-- Header -->
-  <div class="header">
-    <h2>MyGate</h2>
-    <p>Security Dashboard</p>
+<!-- Login Modal -->
+<div id="loginModal" class="modal" style="display: flex;">
+  <div class="modal-content">
+    <h2>🔐 MyGate Login</h2>
+    
+    <input id="loginEmail" placeholder="📧 Email" type="email" value="resident@mygate.com">
+    <input id="loginPassword" placeholder="🔑 Password" type="password" value="password123">
+    
+    <select id="loginRole" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+      <option value="resident">👤 Resident</option>
+      <option value="admin">🛡️ Admin</option>
+      <option value="security">🚨 Security</option>
+    </select>
+    
+    <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #0a1f44, #1e3a8a); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;">
+      Login
+    </button>
+    
+    <p id="loginError" class="error" style="color: #dc2626; margin-top: 10px; text-align: center; display: none;"></p>
+    
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+    
+    </p>
   </div>
+</div>
+
+<!-- Main App (hidden until login) -->
+<div id="app" class="app" style="display: none;">
+
+  <!-- Header with Logout Button -->
+  <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h2>MyGate</h2>
+      <p>Security Dashboard</p>
+    </div>
+    <button onclick="handleLogout()" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+      🚪 Logout
+    </button>
+  </div>
+
+  <!-- User Info -->
+  <div style="background: rgba(10, 31, 68, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+  <p style="color: #000000; font-weight: bold;">
+    👤 Logged in as: 
+    <span id="userEmail" style="font-weight: normal;"></span>
+  </p>
+  <p style="color: #000000; font-weight: bold; font-size: 0.9rem; margin-top: 5px;">
+    Role: 
+    <span id="userRole" style="font-weight: normal;"></span>
+  </p>
+</div>
 
   <!-- Stats -->
   <div class="stats" id="stats"></div>
@@ -45,6 +90,8 @@
 
 </div>
 
+<!-- Scripts -->
+<script src="jwt-auth.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

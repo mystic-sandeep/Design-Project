@@ -18,7 +18,7 @@ body {
   min-height: 100vh;
 }
 
-/* Header */
+/* ============= HEADER ============= */
 .header {
   text-align: center;
   background: rgba(255, 255, 255, 0.95);
@@ -28,6 +28,7 @@ body {
   margin-bottom: 30px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
 }
 
 .header h2 {
@@ -47,7 +48,92 @@ body {
   font-weight: 500;
 }
 
-/* Stats Cards */
+/* ============= LOGIN MODAL ============= */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  animation: slideUp 0.5s ease-out;
+}
+
+.modal-content h2 {
+  margin-bottom: 10px;
+  text-align: center;
+  color: #0a1f44;
+  font-size: 2rem;
+}
+
+.modal-content p {
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-sizing: border-box;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #0a1f44, #1e3a8a);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.modal-content button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.modal-content .error {
+  color: #dc2626;
+  margin-top: 15px;
+  text-align: center;
+  display: none;
+}
+
+/* ============= STATS ============= */
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -101,7 +187,7 @@ body {
   letter-spacing: 0.05em;
 }
 
-/* Actions */
+/* ============= ACTIONS ============= */
 .actions {
   display: flex;
   gap: 20px;
@@ -134,7 +220,7 @@ body {
   transform: translateY(0);
 }
 
-/* Cards */
+/* ============= CARDS ============= */
 .card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
@@ -159,7 +245,7 @@ body {
   display: none;
 }
 
-/* Form Inputs */
+/* ============= FORM INPUTS ============= */
 input {
   width: 100%;
   padding: 16px 20px;
@@ -170,6 +256,7 @@ input {
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.8);
   font-weight: 500;
+  box-sizing: border-box;
 }
 
 input:focus {
@@ -184,7 +271,7 @@ input::placeholder {
   font-weight: 500;
 }
 
-/* Form Buttons */
+/* ============= FORM BUTTONS ============= */
 .card button {
   width: 100%;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -210,7 +297,7 @@ input::placeholder {
   transform: translateY(-1px);
 }
 
-/* Results */
+/* ============= RESULTS ============= */
 #approveResult, #verifyResult {
   margin-top: 20px;
   padding: 15px;
@@ -218,6 +305,8 @@ input::placeholder {
   font-weight: 600;
   text-align: center;
   min-height: 20px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .success {
@@ -232,7 +321,55 @@ input::placeholder {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* Responsive */
+/* ============= LOGOUT BUTTON ============= */
+.logout-btn {
+  background: #ef4444 !important;
+  padding: 8px 16px !important;
+  font-size: 0.9rem !important;
+  float: right;
+  margin-top: -60px;
+}
+
+.logout-btn:hover {
+  background: #dc2626 !important;
+}
+
+/* ============= USER INFO ============= */
+[style*="text-align: center"] {
+  background: rgba(10, 31, 68, 0.1) !important;
+  padding: 15px !important;
+  border-radius: 12px !important;
+  margin-bottom: 20px !important;
+}
+
+/* ============= ANIMATIONS ============= */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============= RESPONSIVE ============= */
 @media (max-width: 768px) {
   .app {
     padding: 15px;
@@ -259,6 +396,12 @@ input::placeholder {
     width: 100%;
     max-width: 300px;
   }
+  
+  .logout-btn {
+    float: none;
+    margin-top: 10px;
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -269,20 +412,8 @@ input::placeholder {
   .header h2 {
     font-size: 1.8rem;
   }
-}
-
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+  
+  .modal-content {
+    padding: 30px 20px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
