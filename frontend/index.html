@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MyGate Clone</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <h2>MyGate</h2>
+    <p>Security Dashboard</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats" id="stats"></div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button onclick="showApprove()">➕ Approve Guest</button>
+    <button onclick="showVerify()">🔍 Verify Guest</button>
+  </div>
+
+  <!-- Approve Section -->
+  <div id="approveSection" class="card hidden">
+    <h3>Approve Guest</h3>
+    <input id="residentId" placeholder="Flat / Resident ID">
+    <input id="name" placeholder="Guest Name">
+    <input id="phone" placeholder="Phone">
+    <input id="purpose" placeholder="Purpose">
+    <button onclick="approveGuest()">Approve</button>
+    <p id="approveResult"></p>
+  </div>
+
+  <!-- Verify Section -->
+  <div id="verifySection" class="card hidden">
+    <h3>Verify Entry</h3>
+    <input id="passCode" placeholder="Enter Pass Code">
+    <button onclick="verifyGuest()">Verify</button>
+    <p id="verifyResult"></p>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
