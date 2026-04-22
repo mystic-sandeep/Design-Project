@@ -1,97 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyGate - Login</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>MyGate Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- Login Modal -->
-<div id="loginModal" class="modal" style="display: flex;">
-  <div class="modal-content">
-    <h2>🔐 MyGate Login</h2>
-    
-    <input id="loginEmail" placeholder="📧 Email" type="email" value="resident@mygate.com">
-    <input id="loginPassword" placeholder="🔑 Password" type="password" value="password123">
-    
-    <select id="loginRole" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
-      <option value="resident">👤 Resident</option>
-      <option value="admin">🛡️ Admin</option>
-      <option value="security">🚨 Security</option>
-    </select>
-    
-    <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #0a1f44, #1e3a8a); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;">
-      Login
-    </button>
-    
-    <p id="loginError" class="error" style="color: #dc2626; margin-top: 10px; text-align: center; display: none;"></p>
-    
-    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
-    
-    </p>
-  </div>
-</div>
-
-<!-- Main App (hidden until login) -->
-<div id="app" class="app" style="display: none;">
-
-  <!-- Header with Logout Button -->
-  <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <h2>MyGate</h2>
-      <p>Security Dashboard</p>
+    <div class="container">
+        <h2>MyGate Login</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" value="password123" required>
+            
+            <select id="role" style="width: 100%; padding: 14px; margin: 10px 0 20px 0; border-radius: 10px; font-size: 16px;">
+                <option value="admin">Admin</option>
+                <option value="resident">Resident</option>
+                <option value="guard">Guard</option>
+                <option value="staff">Staff</option>
+                <option value="maid">Maid</option>
+            </select>
+            
+            <button type="submit">Login</button>
+        </form>
     </div>
-    <button onclick="handleLogout()" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-      🚪 Logout
-    </button>
-  </div>
-
-  <!-- User Info -->
-  <div style="background: rgba(10, 31, 68, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
-  <p style="color: #000000; font-weight: bold;">
-    👤 Logged in as: 
-    <span id="userEmail" style="font-weight: normal;"></span>
-  </p>
-  <p style="color: #000000; font-weight: bold; font-size: 0.9rem; margin-top: 5px;">
-    Role: 
-    <span id="userRole" style="font-weight: normal;"></span>
-  </p>
-</div>
-
-  <!-- Stats -->
-  <div class="stats" id="stats"></div>
-
-  <!-- Actions -->
-  <div class="actions">
-    <button onclick="showApprove()">➕ Approve Guest</button>
-    <button onclick="showVerify()">🔍 Verify Guest</button>
-  </div>
-
-  <!-- Approve Section -->
-  <div id="approveSection" class="card hidden">
-    <h3>Approve Guest</h3>
-    <input id="residentId" placeholder="Flat / Resident ID">
-    <input id="name" placeholder="Guest Name">
-    <input id="phone" placeholder="Phone">
-    <input id="purpose" placeholder="Purpose">
-    <button onclick="approveGuest()">Approve</button>
-    <p id="approveResult"></p>
-  </div>
-
-  <!-- Verify Section -->
-  <div id="verifySection" class="card hidden">
-    <h3>Verify Entry</h3>
-    <input id="passCode" placeholder="Enter Pass Code">
-    <button onclick="verifyGuest()">Verify</button>
-    <p id="verifyResult"></p>
-  </div>
-
-</div>
-
-<!-- Scripts -->
-<script src="jwt-auth.js"></script>
-<script src="script.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            
+            const response = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, role })
+            });
+            
+            const data = await response.json();
+            if (data.token) {
+                localStorage.setItem('jwt_token', data.token);
+                
+                const base64Url = data.token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                
+                // Case-insensitive routing fix
+                const routes = {
+                    'admin': 'dashboards/admin.html',
+                    'resident': 'dashboards/resident.html',
+                    'guard': 'dashboards/guard.html',
+                    'staff': 'dashboards/staff.html',
+                    'maid': 'dashboards/maid.html'
+                };
+                window.location.href = routes[payload.role.toLowerCase()] || 'index.html';
+            } else {
+                alert('Login failed: ' + data.message);
+            }
+        });
+    </script>
 </body>
 </html>

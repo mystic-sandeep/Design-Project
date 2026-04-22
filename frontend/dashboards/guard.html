@@ -1,0 +1,413 @@
+<!--DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guard Dashboard</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        .top-bar h2 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .small-btn {
+            width: auto;
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-bottom: 0;
+        }
+
+        .action-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .action-grid button {
+            width: auto;
+            flex: 1 1 calc(50% - 10px);
+            margin-bottom: 0;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        #checkInOutBtn {
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        
+        #checkInOutBtn.checked-in {
+            background-color: #f44336;
+        }
+
+        #visitorFormSection {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        #visitorFormSection input {
+            width: 100%;
+        }
+        
+        #result {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd400;
+            word-wrap: break-word;
+        }
+
+        .toast-popup {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #4CAF50;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            right: 30px;
+            top: 30px;
+            font-size: 17px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.4s, visibility 0.4s;
+        }
+        
+        .toast-popup.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="toastPopup" class="toast-popup"></div>
+
+    <div class="container" style="max-width: 650px;">
+        <div class="top-bar">
+            <h2>Guard Portal</h2>
+            <div class="top-buttons">
+                <button id="checkInOutBtn" class="small-btn" onclick="handleCheckInOut()">Check In</button>
+                <button class="small-btn logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        
+        <div class="action-grid">
+            <button onclick="toggleVisitorForm()">Register Visitor</button>
+            <button onclick="executeAction('/guard/mark-entry', 'POST', {visitorId: 'V001'})">Mark Entry</button>
+            <button onclick="executeAction('/guard/mark-exit', 'POST', {visitorId: 'V001'})">Mark Exit</button>
+            <button onclick="executeAction('/guard/log-vehicle', 'POST', {vehicleNumber: 'MH02'})">Log Vehicle</button>
+        </div>
+        
+        <div id="visitorFormSection">
+            <h3 style="margin-top: 0;">New Visitor Details</h3>
+            <input type="text" id="apartmentNumber" placeholder="Apartment No (e.g., A101)">
+            <input type="text" id="visitorName" placeholder="Visitor Name">
+            <input type="text" id="contactNumber" placeholder="Contact Number (10 digits)" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <input type="text" id="reasonOfVisit" placeholder="Reason of Visit (e.g., Delivery, Guest)">
+            <button onclick="submitVisitor()" style="width: 100%;">Generate Passcode</button>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script src="../jwt-auth.js"></script>
+    <script>
+        setInterval(pollForApprovals, 3000);
+
+        let shiftStartTime = null;
+
+        function handleCheckInOut() {
+            const btn = document.getElementById('checkInOutBtn');
+            
+            if (!shiftStartTime) {
+                authenticatedFetch('/guard/check-in', 'POST')
+                    .then(data => {
+                        if(data.success) {
+                            shiftStartTime = Date.now();
+                            btn.innerText = "Check Out";
+                            btn.classList.add("checked-in");
+                            showPopup("✅ Checked In successfully! Shift timer started.");
+                        }
+                    });
+            } else {
+                const durationMs = Date.now() - shiftStartTime;
+                
+                const hours = Math.floor(durationMs / (1000 * 60 * 60));
+                const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
+                
+                const shiftDurationStr = `${hours}h ${minutes}m ${seconds}s`;
+                
+                authenticatedFetch('/guard/check-out', 'POST', { duration: shiftDurationStr })
+                    .then(data => {
+                        if(data.success) {
+                            shiftStartTime = null;
+                            btn.innerText = "Check In";
+                            btn.classList.remove("checked-in");
+                            showPopup(`✅ Checked Out!\nShift Logged: ${shiftDurationStr}`);
+                        }
+                    });
+            }
+        }
+
+        function pollForApprovals() {
+            if(!localStorage.getItem('jwt_token')) return;
+            
+            authenticatedFetch('/guard/poll-approvals', 'GET')
+                .then(data => {
+                    if (data && data.success && data.data.approvals.length > 0) {
+                        data.data.approvals.forEach(visitor => {
+                            showPopup(`✅ Approved by Resident!\nName: ${visitor.visitorName}\nFlat: ${visitor.apartmentNumber}`);
+                        });
+                    }
+                }).catch(err => console.log(err));
+        }
+
+        function showPopup(message) {
+            const popup = document.getElementById('toastPopup');
+            popup.innerText = message;
+            popup.classList.add('show');
+            
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 6000);
+        }
+
+        function toggleVisitorForm() {
+            const form = document.getElementById('visitorFormSection');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+                document.getElementById('result').innerText = '';
+            }
+        }
+
+        function submitVisitor() {
+            const apartmentNumber = document.getElementById('apartmentNumber').value;
+            const visitorName = document.getElementById('visitorName').value;
+            const contactNumber = document.getElementById('contactNumber').value;
+            const reasonOfVisit = document.getElementById('reasonOfVisit').value;
+
+            if (contactNumber.length !== 10) {
+                alert("Contact number must be exactly 10 digits.");
+                return;
+            }
+            if (!apartmentNumber || !visitorName || !reasonOfVisit) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            authenticatedFetch('/guard/register-visitor', 'POST', { 
+                apartmentNumber, visitorName, contactNumber, reasonOfVisit 
+            }).then(data => {
+                if (data.success) {
+                    document.getElementById('result').innerText = `Passcode: ${data.data.passCode}`;
+                    document.getElementById('apartmentNumber').value = '';
+                    document.getElementById('visitorName').value = '';
+                    document.getElementById('contactNumber').value = '';
+                    document.getElementById('reasonOfVisit').value = '';
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+
+        function executeAction(endpoint, method, body = null) {
+            authenticatedFetch(endpoint, method, body).then(data => alert(JSON.stringify(data.data)));
+        }
+    </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guard Dashboard</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Enlarge on Hover Effect */
+        button { transition: transform 0.2s ease-in-out; }
+        button:hover { transform: scale(1.05); cursor: pointer; }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 25px; }
+        .top-buttons { display: flex; gap: 10px; }
+        .small-btn { width: auto; padding: 8px 16px; font-size: 13px; margin-bottom: 0; }
+
+        /* Stats Section */
+        .stats-box {
+            background: rgba(255, 212, 0, 0.15);
+            border: 2px solid #ffd400;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        .stats-box span { font-size: 32px; font-weight: bold; color: #ffd400; display: block; }
+
+        .action-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; }
+        .action-grid button { flex: 1 1 calc(50% - 10px); padding: 12px; font-size: 14px; margin-bottom: 0; }
+
+        #visitorFormSection {
+            display: none; background: rgba(255,255,255,0.1); padding: 15px; 
+            border-radius: 10px; margin-top: 20px; width: 100%; box-sizing: border-box;
+        }
+        #checkInOutBtn { background-color: #4CAF50; color: white; }
+        #checkInOutBtn.checked-in { background-color: #f44336; }
+
+        .toast-popup {
+            visibility: hidden; min-width: 250px; background-color: #4CAF50; color: #fff;
+            text-align: center; border-radius: 8px; padding: 16px; position: fixed;
+            z-index: 1000; right: 30px; top: 30px; opacity: 0; transition: 0.4s;
+        }
+        .toast-popup.show { visibility: visible; opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toastPopup" class="toast-popup"></div>
+
+    <div class="container" style="max-width: 650px;">
+        <div class="top-bar">
+            <h2>Guard Portal</h2>
+            <div class="top-buttons">
+                <button id="checkInOutBtn" class="small-btn" onclick="handleCheckInOut()">Check In</button>
+                <button class="small-btn logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-box">
+            <p>Guests Approved Today</p>
+            <span id="approvalCount">0</span>
+        </div>
+        
+        <div class="action-grid">
+            <button onclick="toggleVisitorForm()">Register Visitor</button>
+            <button onclick="executeAction('/guard/mark-entry', 'POST')">Mark Entry</button>
+            <button onclick="executeAction('/guard/mark-exit', 'POST')">Mark Exit</button>
+            <button onclick="executeAction('/guard/log-vehicle', 'POST')">Log Vehicle</button>
+        </div>
+        
+        <div id="visitorFormSection">
+            <h3 style="margin-top: 0;">New Visitor Details</h3>
+            <input type="text" id="apartmentNumber" placeholder="Apartment No">
+            <input type="text" id="visitorName" placeholder="Visitor Name">
+            <input type="text" id="contactNumber" placeholder="Phone" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <input type="text" id="reasonOfVisit" placeholder="Reason (e.g. Delivery)">
+            <button onclick="submitVisitor()" style="width: 100%;">Generate Passcode</button>
+            <div id="result" style="color: #ffd400; margin-top:10px; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <script src="../jwt-auth.js"></script>
+    <script>
+    // --- NEW: Persistent Daily Counter Logic ---
+    const todayDateStr = new Date().toLocaleDateString();
+    let savedDate = localStorage.getItem('approvalDate');
+    let approvedToday = 0;
+
+    // If the saved date matches today, load the saved count. Otherwise, reset to 0 for a new day.
+    if (savedDate === todayDateStr) {
+        approvedToday = parseInt(localStorage.getItem('approvedTodayCount')) || 0;
+    } else {
+        localStorage.setItem('approvalDate', todayDateStr);
+        localStorage.setItem('approvedTodayCount', 0);
+    }
+
+    // Display the count immediately when the dashboard loads
+    document.getElementById('approvalCount').innerText = approvedToday;
+
+    let shiftStartTime = null;
+
+    setInterval(pollForApprovals, 3000);
+
+    function pollForApprovals() {
+        if(!localStorage.getItem('jwt_token')) return;
+        authenticatedFetch('/guard/poll-approvals', 'GET').then(data => {
+            if (data?.success && data.data.approvals.length > 0) {
+                data.data.approvals.forEach(v => {
+                    // Update the variable and save it permanently to the browser
+                    approvedToday++;
+                    localStorage.setItem('approvedTodayCount', approvedToday);
+                    
+                    document.getElementById('approvalCount').innerText = approvedToday;
+                    showPopup(`✅ Approved: ${v.visitorName} (Flat ${v.apartmentNumber})`);
+                });
+            }
+        });
+    }
+
+    function showPopup(msg) {
+        const p = document.getElementById('toastPopup');
+        p.innerText = msg; p.classList.add('show');
+        setTimeout(() => p.classList.remove('show'), 6000);
+    }
+
+    function handleCheckInOut() {
+        const btn = document.getElementById('checkInOutBtn');
+        if (!shiftStartTime) {
+            authenticatedFetch('/guard/check-in', 'POST').then(d => {
+                if(d.success) { 
+                    shiftStartTime = Date.now(); 
+                    btn.innerText = "Check Out"; 
+                    btn.classList.add("checked-in");
+                    showPopup("✅ Shift Started");
+                }
+            });
+        } else {
+            authenticatedFetch('/guard/check-out', 'POST', { duration: "Logged" }).then(d => {
+                if(d.success) { 
+                    shiftStartTime = null; 
+                    btn.innerText = "Check In"; 
+                    btn.classList.remove("checked-in");
+                    showPopup("✅ Shift Logged");
+                }
+            });
+        }
+    }
+
+    function toggleVisitorForm() {
+        const f = document.getElementById('visitorFormSection');
+        f.style.display = (f.style.display === 'none' || f.style.display === '') ? 'block' : 'none';
+    }
+
+    function submitVisitor() {
+        const body = {
+            apartmentNumber: document.getElementById('apartmentNumber').value,
+            visitorName: document.getElementById('visitorName').value,
+            contactNumber: document.getElementById('contactNumber').value,
+            reasonOfVisit: document.getElementById('reasonOfVisit').value
+        };
+        authenticatedFetch('/guard/register-visitor', 'POST', body).then(d => {
+            if(d.success) document.getElementById('result').innerText = `Passcode: ${d.data.passCode}`;
+        });
+    }
+
+    function executeAction(ep, m) { authenticatedFetch(ep, m).then(d => alert(d.message)); }
+    </script>
