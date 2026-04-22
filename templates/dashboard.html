@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h2>{{ pending_visitors }}</h2>
+                <p><i class="fas fa-users"></i> Pending Visitors</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h2>{{ today_staff }}</h2>
+                <p><i class="fas fa-user-tie"></i> Staff Today</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <a href="{{ url_for('visitors', resident_id=resident.id) }}" class="card h-100 text-decoration-none text-dark">
+            <div class="card-body">
+                <h5><i class="fas fa-user-plus text-primary"></i> Visitor Management</h5>
+                <p>Pre-approve guests & delivery</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{{ url_for('staff', resident_id=resident.id) }}" class="card h-100 text-decoration-none text-dark">
+            <div class="card-body">
+                <h5><i class="fas fa-user-clock text-success"></i> Staff Tracking</h5>
+                <p>Domestic help attendance</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{{ url_for('patrol') }}" class="card h-100 text-decoration-none text-dark">
+            <div class="card-body">
+                <h5><i class="fas fa-map-marker-alt text-warning"></i> Guard Patrol</h5>
+                <p>Security rounds tracking</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <a href="{{ url_for('devices') }}" class="card h-100 text-decoration-none text-dark">
+            <div class="card-body">
+                <h5><i class="fas fa-microchip text-info"></i> Smart Devices</h5>
+                <p>Locks & boom barriers</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

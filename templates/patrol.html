@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Guard Patrolling{% endblock %}
+
+{% block content %}
+<h2>Guard Patrolling System</h2>
+
+<!-- Guard Dashboard -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3 id="checkpointsCompleted">0</h3>
+                <p>Checkpoints Completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3 id="totalCheckpoints">{{ checkpoints|length }}</h3>
+                <p>Total Checkpoints</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3 id="patrolStatus">Ready</h3>
+                <p>Patrol Status</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Scanner -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>Scan Checkpoint QR Code</h5>
+        <button class="btn btn-primary" onclick="startScanner()">Start QR Scanner</button>
+    </div>
+    <div class="card-body">
+        <div class="qr-scanner-container" id="qrScanner" style="display: none;">
+            <video id="qrVideo" width="400" height="300" style="border: 2px solid #ddd;"></video>
+            <div id="scanResult" class="mt-3"></div>
+        </div>
+        <div class="manual-scan" id="manualScan">
+            <form id="manualPatrolForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <select class="form-control" name="checkpoint_id" id="checkpointSelect" required>
+                            <option value="">Select Checkpoint</option>
+                            {% for checkpoint in checkpoints %}
+                            <option value="{{ checkpoint.id }}">{{ checkpoint.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="gps" placeholder="GPS (lat,long)" id="gpsInput">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" class="form-control" name="guard_id" placeholder="Guard ID" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success mt-3 w-100">Record Patrol</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Patrol History -->
+<div class="card">
+    <div class="card-header">Recent Patrol Logs</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Guard ID</th>
+                        <th>Checkpoint</th>
+                        <th>Time</th>
+                        <th>GPS</th>
+                    </tr>
+                </thead>
+                <tbody id="patrolLogs">
+                    <!-- Loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

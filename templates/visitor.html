@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Visitors{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-users"></i> Visitor Management</h2>
+
+<!-- Add Visitor Form -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5><i class="fas fa-plus"></i> Pre-Approve Visitor</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="name" placeholder="Full Name" required>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="type" required>
+                        <option value="guest">👤 Guest</option>
+                        <option value="delivery">📦 Delivery</option>
+                        <option value="cab">🚕 Cab</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="tel" class="form-control" name="phone" placeholder="Phone">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" class="form-control" name="vehicle_no" placeholder="Vehicle No">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Visitors List -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Approved Visitors ({{ visitors|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if visitors %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>QR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in visitors %}
+                    <tr>
+                        <td>{{ v.name }}</td>
+                        <td><span class="badge bg-info">{{ v.visitor_type|title }}</span></td>
+                        <td>{{ v.phone or '-' }}</td>
+                        <td><span class="badge bg-{{ 'success' if v.status=='approved' else 'warning' }}">{{ v.status|title }}</span></td>
+                        <td>
+                            {% if v.qr_code %}
+                            <img src="{{ v.qr_code }}" width="60" class="rounded">
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No visitors yet. Add one above!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

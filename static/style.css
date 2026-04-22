@@ -1,0 +1,28 @@
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+.table th {
+    border-top: none;
+}
+
+.badge {
+    font-size: 0.8em;
+}
