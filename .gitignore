@@ -1,0 +1,40 @@
+# --- Java / Maven / Gradle ---
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mtj.tmp/
+.gradle/
+build/
+
+# --- Frontend / Web ---
+node_modules/
+.eslintcache
+*.log
+dist/
+out/
+
+# --- IDE Specific (VS Code & Others) ---
+.vscode/
+.settings/
+.project
+.classpath
+*.sublime-project
+*.sublime-workspace
+.idea/
+*.iml
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Environment & Security ---
+# NEVER push your secrets!
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
