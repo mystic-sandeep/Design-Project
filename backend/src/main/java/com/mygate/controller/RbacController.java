@@ -21,6 +21,9 @@ public class RbacController {
     
     private static final Map<String, Map<String, Object>> pendingVisitors = new ConcurrentHashMap<>();
     
+    // Queue to hold vehicles for 24 hours
+    private static final List<Map<String, Object>> loggedVehicles = new CopyOnWriteArrayList<>();
+
     // Queue to hold approvals until the guard dashboard fetches them
     private static final List<Map<String, Object>> approvedVisitorsQueue = new CopyOnWriteArrayList<>();
     private final Random random = new Random();
@@ -121,8 +124,35 @@ public class RbacController {
     
     @PostMapping("/guard/log-vehicle")
     @Permissions("logVehicle")
-    public ResponseEntity<?> logVehicle(HttpServletRequest request) { return buildResponse(request, "✅ Vehicle logged", Map.of()); }
+    public ResponseEntity<?> logVehicle(HttpServletRequest request, @RequestBody Map<String, String> body) {
+        Map<String, Object> vehicleData = new HashMap<>();
+        vehicleData.put("vehicleNumber", body.get("vehicleNumber"));
+        vehicleData.put("category", body.get("category"));
+        
+        // Generate current time for the frontend popup
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("hh:mm a");
+        String timeString = sdf.format(new java.util.Date());
+        vehicleData.put("timeLogged", timeString);
+        
+        long currentTime = System.currentTimeMillis();
+        vehicleData.put("timestamp", currentTime);
+        
+        loggedVehicles.add(vehicleData);
+        
+        // Clean up entries older than 24 hours (86400000 ms)
+        long twentyFourHoursAgo = currentTime - 86400000;
+        loggedVehicles.removeIf(v -> (Long) v.get("timestamp") < twentyFourHoursAgo);
+        
+        return buildResponse(request, "✅ Vehicle logged", vehicleData);
+    }
     
+    // Admin endpoint to view logged vehicles
+    @GetMapping("/admin/vehicles")
+    @Permissions("manageUsers") 
+    public ResponseEntity<?> getLoggedVehicles(HttpServletRequest request) {
+        return buildResponse(request, "✅ Vehicles retrieved", Map.of("vehicles", loggedVehicles));
+    }
+        
     @PostMapping("/guard/check-in")
     @Permissions("checkIn")
     public ResponseEntity<?> guardCheckIn(HttpServletRequest request) { return buildResponse(request, "✅ Guard checked in", Map.of()); }

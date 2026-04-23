@@ -1,250 +1,3 @@
-<!--DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Guard Dashboard</title>
-    <link rel="stylesheet" href="../style.css">
-    <style>
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 25px;
-        }
-        
-        .top-bar h2 {
-            margin: 0;
-            font-size: 32px;
-        }
-
-        .top-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .small-btn {
-            width: auto;
-            padding: 4px 8px;
-            font-size: 12px;
-            margin-bottom: 0;
-        }
-
-        .action-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-        
-        .action-grid button {
-            width: auto;
-            flex: 1 1 calc(50% - 10px);
-            margin-bottom: 0;
-            padding: 12px;
-            font-size: 14px;
-        }
-
-        #checkInOutBtn {
-            background-color: #4CAF50;
-            color: white;
-            transition: background-color 0.3s;
-        }
-        
-        #checkInOutBtn.checked-in {
-            background-color: #f44336;
-        }
-
-        #visitorFormSection {
-            display: none;
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        #visitorFormSection input {
-            width: 100%;
-        }
-        
-        #result {
-            margin-top: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #ffd400;
-            word-wrap: break-word;
-        }
-
-        .toast-popup {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #4CAF50;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1000;
-            right: 30px;
-            top: 30px;
-            font-size: 17px;
-            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
-            opacity: 0;
-            transition: opacity 0.4s, visibility 0.4s;
-        }
-        
-        .toast-popup.show {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
-</head>
-<body>
-    <div id="toastPopup" class="toast-popup"></div>
-
-    <div class="container" style="max-width: 650px;">
-        <div class="top-bar">
-            <h2>Guard Portal</h2>
-            <div class="top-buttons">
-                <button id="checkInOutBtn" class="small-btn" onclick="handleCheckInOut()">Check In</button>
-                <button class="small-btn logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
-        
-        <div class="action-grid">
-            <button onclick="toggleVisitorForm()">Register Visitor</button>
-            <button onclick="executeAction('/guard/mark-entry', 'POST', {visitorId: 'V001'})">Mark Entry</button>
-            <button onclick="executeAction('/guard/mark-exit', 'POST', {visitorId: 'V001'})">Mark Exit</button>
-            <button onclick="executeAction('/guard/log-vehicle', 'POST', {vehicleNumber: 'MH02'})">Log Vehicle</button>
-        </div>
-        
-        <div id="visitorFormSection">
-            <h3 style="margin-top: 0;">New Visitor Details</h3>
-            <input type="text" id="apartmentNumber" placeholder="Apartment No (e.g., A101)">
-            <input type="text" id="visitorName" placeholder="Visitor Name">
-            <input type="text" id="contactNumber" placeholder="Contact Number (10 digits)" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            <input type="text" id="reasonOfVisit" placeholder="Reason of Visit (e.g., Delivery, Guest)">
-            <button onclick="submitVisitor()" style="width: 100%;">Generate Passcode</button>
-            <div id="result"></div>
-        </div>
-    </div>
-
-    <script src="../jwt-auth.js"></script>
-    <script>
-        setInterval(pollForApprovals, 3000);
-
-        let shiftStartTime = null;
-
-        function handleCheckInOut() {
-            const btn = document.getElementById('checkInOutBtn');
-            
-            if (!shiftStartTime) {
-                authenticatedFetch('/guard/check-in', 'POST')
-                    .then(data => {
-                        if(data.success) {
-                            shiftStartTime = Date.now();
-                            btn.innerText = "Check Out";
-                            btn.classList.add("checked-in");
-                            showPopup("✅ Checked In successfully! Shift timer started.");
-                        }
-                    });
-            } else {
-                const durationMs = Date.now() - shiftStartTime;
-                
-                const hours = Math.floor(durationMs / (1000 * 60 * 60));
-                const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
-                
-                const shiftDurationStr = `${hours}h ${minutes}m ${seconds}s`;
-                
-                authenticatedFetch('/guard/check-out', 'POST', { duration: shiftDurationStr })
-                    .then(data => {
-                        if(data.success) {
-                            shiftStartTime = null;
-                            btn.innerText = "Check In";
-                            btn.classList.remove("checked-in");
-                            showPopup(`✅ Checked Out!\nShift Logged: ${shiftDurationStr}`);
-                        }
-                    });
-            }
-        }
-
-        function pollForApprovals() {
-            if(!localStorage.getItem('jwt_token')) return;
-            
-            authenticatedFetch('/guard/poll-approvals', 'GET')
-                .then(data => {
-                    if (data && data.success && data.data.approvals.length > 0) {
-                        data.data.approvals.forEach(visitor => {
-                            showPopup(`✅ Approved by Resident!\nName: ${visitor.visitorName}\nFlat: ${visitor.apartmentNumber}`);
-                        });
-                    }
-                }).catch(err => console.log(err));
-        }
-
-        function showPopup(message) {
-            const popup = document.getElementById('toastPopup');
-            popup.innerText = message;
-            popup.classList.add('show');
-            
-            setTimeout(() => {
-                popup.classList.remove('show');
-            }, 6000);
-        }
-
-        function toggleVisitorForm() {
-            const form = document.getElementById('visitorFormSection');
-            if (form.style.display === 'none' || form.style.display === '') {
-                form.style.display = 'block';
-            } else {
-                form.style.display = 'none';
-                document.getElementById('result').innerText = '';
-            }
-        }
-
-        function submitVisitor() {
-            const apartmentNumber = document.getElementById('apartmentNumber').value;
-            const visitorName = document.getElementById('visitorName').value;
-            const contactNumber = document.getElementById('contactNumber').value;
-            const reasonOfVisit = document.getElementById('reasonOfVisit').value;
-
-            if (contactNumber.length !== 10) {
-                alert("Contact number must be exactly 10 digits.");
-                return;
-            }
-            if (!apartmentNumber || !visitorName || !reasonOfVisit) {
-                alert("Please fill in all fields.");
-                return;
-            }
-
-            authenticatedFetch('/guard/register-visitor', 'POST', { 
-                apartmentNumber, visitorName, contactNumber, reasonOfVisit 
-            }).then(data => {
-                if (data.success) {
-                    document.getElementById('result').innerText = `Passcode: ${data.data.passCode}`;
-                    document.getElementById('apartmentNumber').value = '';
-                    document.getElementById('visitorName').value = '';
-                    document.getElementById('contactNumber').value = '';
-                    document.getElementById('reasonOfVisit').value = '';
-                } else {
-                    alert(data.error);
-                }
-            });
-        }
-
-        function executeAction(endpoint, method, body = null) {
-            authenticatedFetch(endpoint, method, body).then(data => alert(JSON.stringify(data.data)));
-        }
-    </script>
-</body>
-</html> -->
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -301,17 +54,30 @@
                 <button class="small-btn logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
-
-        <div class="stats-box">
+    <div style="display: flex; gap: 20px; width: 100%; margin-bottom: 25px;">
+        <div class="stats-box" style="flex: 1; margin-bottom: 0;">
             <p>Guests Approved Today</p>
             <span id="approvalCount">0</span>
         </div>
+        <div class="stats-box" style="flex: 1; margin-bottom: 0; display: flex; flex-direction: column; align-items: center;">
+            <p style="margin-top: 0;">Vehicles Logged Today</p>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="vehiclePieChart" style="width: 80px; height: 80px; border-radius: 50%; background: #555;"></div>
+                <div style="text-align: left; font-size: 14px; color: white;">
+                    <div style="color: #f44336;">🚗 Car: <span id="carCount">0</span></div>
+                    <div style="color: #2196F3;">🏍️ Bike: <span id="bikeCount">0</span></div>
+                    <div style="color: #ffdb58;">🚚 Truck: <span id="truckCount">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
         
         <div class="action-grid">
             <button onclick="toggleVisitorForm()">Register Visitor</button>
+            <button onclick="toggleVehicleForm()">Log Vehicle</button>
             <button onclick="executeAction('/guard/mark-entry', 'POST')">Mark Entry</button>
             <button onclick="executeAction('/guard/mark-exit', 'POST')">Mark Exit</button>
-            <button onclick="executeAction('/guard/log-vehicle', 'POST')">Log Vehicle</button>
         </div>
         
         <div id="visitorFormSection">
@@ -321,52 +87,119 @@
             <input type="text" id="contactNumber" placeholder="Phone" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             <input type="text" id="reasonOfVisit" placeholder="Reason (e.g. Delivery)">
             <button onclick="submitVisitor()" style="width: 100%;">Generate Passcode</button>
-            <div id="result" style="color: #ffd400; margin-top:10px; font-weight:bold;"></div>
+            <div id="result" style="color: #ffd400; margin-top:10px; font-weight:bold;">
+        </div>
+        
+        </div>
+            <div id="vehicleFormSection" style="display: none; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-top: 20px; width: 100%; box-sizing: border-box;">
+            <h3 style="margin-top: 0;">Log Vehicle Entry</h3>
+            <input type="text" id="vehicleNumber" placeholder="Vehicle Number (e.g., MH02AB1234)" style="width: 100%; margin-bottom: 10px;">
+            <select id="vehicleCategory" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px;">
+                <option value="Car">🚗 Car</option>
+                <option value="Bike">🏍️ Bike</option>
+                <option value="Truck">🚚 Truck</option>
+            </select>
+            <button onclick="submitVehicle()" style="width: 100%;">Log Entry</button>
         </div>
     </div>
 
     <script src="../jwt-auth.js"></script>
-    <script>
-    // --- NEW: Persistent Daily Counter Logic ---
-    const todayDateStr = new Date().toLocaleDateString();
-    let savedDate = localStorage.getItem('approvalDate');
-    let approvedToday = 0;
-
-    // If the saved date matches today, load the saved count. Otherwise, reset to 0 for a new day.
-    if (savedDate === todayDateStr) {
-        approvedToday = parseInt(localStorage.getItem('approvedTodayCount')) || 0;
-    } else {
-        localStorage.setItem('approvalDate', todayDateStr);
-        localStorage.setItem('approvedTodayCount', 0);
+<script>
+    // --- Midnight Reset Logic ---
+    function checkMidnightReset() {
+        const today = new Date().toLocaleDateString();
+        const savedDate = localStorage.getItem('lastApprovalDate');
+        if (savedDate !== today) {
+            localStorage.setItem('lastApprovalDate', today);
+            localStorage.setItem('approvedTodayCount', '0');
+            localStorage.setItem('vehicleCounts', JSON.stringify({ Car: 0, Bike: 0, Truck: 0 }));
+            return true;
+        }
+        return false;
     }
 
-    // Display the count immediately when the dashboard loads
+    let approvedToday = 0;
+    let vehicleCounts = { Car: 0, Bike: 0, Truck: 0 };
+
+    if (checkMidnightReset()) {
+        approvedToday = 0;
+        vehicleCounts = { Car: 0, Bike: 0, Truck: 0 };
+    } else {
+        approvedToday = parseInt(localStorage.getItem('approvedTodayCount')) || 0;
+        
+        // Safely parse vehicle counts to guarantee they are math-ready numbers
+        try {
+            const savedCounts = JSON.parse(localStorage.getItem('vehicleCounts'));
+            if (savedCounts) {
+                vehicleCounts.Car = parseInt(savedCounts.Car) || 0;
+                vehicleCounts.Bike = parseInt(savedCounts.Bike) || 0;
+                vehicleCounts.Truck = parseInt(savedCounts.Truck) || 0;
+            }
+        } catch(e) {
+            vehicleCounts = { Car: 0, Bike: 0, Truck: 0 };
+        }
+    }
+
     document.getElementById('approvalCount').innerText = approvedToday;
 
-    let shiftStartTime = null;
+    // --- Pie Chart Logic ---
+    function updatePieChart() {
+        document.getElementById('carCount').innerText = vehicleCounts.Car;
+        document.getElementById('bikeCount').innerText = vehicleCounts.Bike;
+        document.getElementById('truckCount').innerText = vehicleCounts.Truck;
+        
+        const total = vehicleCounts.Car + vehicleCounts.Bike + vehicleCounts.Truck;
+        const chart = document.getElementById('vehiclePieChart');
+        
+        if (total === 0) {
+            chart.style.backgroundImage = 'none';
+            chart.style.backgroundColor = '#555';
+        } else {
+            const carPct = (vehicleCounts.Car / total) * 100;
+            const bikePct = (vehicleCounts.Bike / total) * 100;
+            
+            // Using backgroundImage guarantees the browser renders the gradient properly
+            chart.style.backgroundColor = 'transparent';
+            chart.style.backgroundImage = `conic-gradient(#f44336 0% ${carPct}%, #2196F3 ${carPct}% ${carPct + bikePct}%, #ffdb58 ${carPct + bikePct}% 100%)`;
+        }
+    }
 
+    // Initialize chart on page load
+    updatePieChart();
+
+    // --- Polling and Update Logic ---
+    let shiftStartTime = null;
     setInterval(pollForApprovals, 3000);
 
     function pollForApprovals() {
         if(!localStorage.getItem('jwt_token')) return;
+        
         authenticatedFetch('/guard/poll-approvals', 'GET').then(data => {
             if (data?.success && data.data.approvals.length > 0) {
                 data.data.approvals.forEach(v => {
-                    // Update the variable and save it permanently to the browser
+                    const today = new Date().toLocaleDateString();
+                    if (localStorage.getItem('lastApprovalDate') !== today) {
+                        approvedToday = 0;
+                        localStorage.setItem('lastApprovalDate', today);
+                    }
+
                     approvedToday++;
-                    localStorage.setItem('approvedTodayCount', approvedToday);
-                    
+                    localStorage.setItem('approvedTodayCount', approvedToday.toString());
                     document.getElementById('approvalCount').innerText = approvedToday;
                     showPopup(`✅ Approved: ${v.visitorName} (Flat ${v.apartmentNumber})`);
                 });
             }
-        });
+        }).catch(err => console.log(err));
     }
 
-    function showPopup(msg) {
-        const p = document.getElementById('toastPopup');
-        p.innerText = msg; p.classList.add('show');
-        setTimeout(() => p.classList.remove('show'), 6000);
+    function showPopup(message) {
+        const popup = document.getElementById('toastPopup');
+        popup.innerText = message;
+        popup.classList.add('show');
+        
+        setTimeout(() => {
+            popup.classList.remove('show');
+        }, 6000);
     }
 
     function handleCheckInOut() {
@@ -392,22 +225,58 @@
         }
     }
 
+    // --- Form Toggles ---
     function toggleVisitorForm() {
         const f = document.getElementById('visitorFormSection');
         f.style.display = (f.style.display === 'none' || f.style.display === '') ? 'block' : 'none';
+        document.getElementById('vehicleFormSection').style.display = 'none';
     }
 
+    function toggleVehicleForm() {
+        const f = document.getElementById('vehicleFormSection');
+        f.style.display = (f.style.display === 'none' || f.style.display === '') ? 'block' : 'none';
+        document.getElementById('visitorFormSection').style.display = 'none';
+    }
+
+    // --- Submit Actions ---
     function submitVisitor() {
-        const body = {
-            apartmentNumber: document.getElementById('apartmentNumber').value,
-            visitorName: document.getElementById('visitorName').value,
-            contactNumber: document.getElementById('contactNumber').value,
-            reasonOfVisit: document.getElementById('reasonOfVisit').value
-        };
-        authenticatedFetch('/guard/register-visitor', 'POST', body).then(d => {
+        const apartmentNumber = document.getElementById('apartmentNumber').value;
+        const visitorName = document.getElementById('visitorName').value;
+        const contactNumber = document.getElementById('contactNumber').value;
+        const reasonOfVisit = document.getElementById('reasonOfVisit').value;
+
+        if (contactNumber.length !== 10) { alert("Contact number must be 10 digits."); return; }
+        if (!apartmentNumber || !visitorName || !reasonOfVisit) { alert("Fill all fields."); return; }
+
+        authenticatedFetch('/guard/register-visitor', 'POST', { 
+            apartmentNumber, visitorName, contactNumber, reasonOfVisit 
+        }).then(d => {
             if(d.success) document.getElementById('result').innerText = `Passcode: ${d.data.passCode}`;
         });
     }
 
+    function submitVehicle() {
+        const vehicleNumber = document.getElementById('vehicleNumber').value;
+        const category = document.getElementById('vehicleCategory').value;
+
+        if (!vehicleNumber) { alert("Please enter a vehicle number."); return; }
+
+        authenticatedFetch('/guard/log-vehicle', 'POST', { vehicleNumber, category }).then(d => {
+            if (d.success) {
+                showPopup(`✅ Vehicle ${category} logged in at ${d.data.timeLogged}`);
+                document.getElementById('vehicleNumber').value = '';
+                toggleVehicleForm();
+                
+                // Update specific category safely
+                vehicleCounts[category] = (parseInt(vehicleCounts[category]) || 0) + 1;
+                localStorage.setItem('vehicleCounts', JSON.stringify(vehicleCounts));
+                
+                updatePieChart(); // Recalculate graph
+            } else {
+                alert('Error: ' + d.error);
+            }
+        });
+    }
+
     function executeAction(ep, m) { authenticatedFetch(ep, m).then(d => alert(d.message)); }
-    </script>
+</script>
