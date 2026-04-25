@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Admin Portal</h2>
+        <button onclick="executeAction('/admin/generate-billing', 'POST', {month: 'May 2026'})">Generate Billing</button>
+        <button onclick="executeAction('/admin/track-staff', 'GET')">Track Staff</button>
+        <button onclick="executeAction('/admin/send-announcement', 'POST', {title: 'Notice', message: 'Water supply cut at 4PM'})">Send Announcement</button>
+        <button onclick="executeAction('/admin/users', 'GET')">Manage Users</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <script src="../jwt-auth.js"></script>
+    <script>
+        function executeAction(endpoint, method, body = null) {
+            authenticatedFetch(endpoint, method, body).then(data => alert(JSON.stringify(data.data)));
+        }
+    </script>
+</body>
+</html>
