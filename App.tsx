@@ -5,170 +5,120 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
   ScrollView,
   Image,
   Dimensions,
   SafeAreaView,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform
+  Alert,
+  Share
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-// Modern Professional Color Palette
-const COLORS = {
-  background: '#0F172A',
-  cardBg: '#1E293B',
-  primary: '#10B981',
-  accent: '#F59E0B',
+const THEME = {
+  navy: '#0F172A',
+  slate: '#1E293B',
+  emerald: '#10B981',
+  amber: '#F59E0B',
   white: '#FFFFFF',
-  textMain: '#F8FAFC',
-  textMuted: '#94A3B8',
-  danger: '#EF4444',
+  muted: '#94A3B8',
+  red: '#EF4444',
   border: '#334155'
 };
 
-export default function App() {
-  const [step, setStep] = useState<'onboarding' | 'login' | 'otp' | 'dashboard'>('onboarding');
-  const [phone, setPhone] = useState('');
+export default function MyGateApp() {
+  // --- CORE STATE ---
+  const [currentStep, setCurrentStep] = useState('onboarding');
+  const [userRole, setUserRole] = useState('');
+  const [userName, setUserName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
-  const [role, setRole] = useState<'resident' | 'guard' | 'admin' | 'maid' | 'staff' | ''>('');
 
+  // Dashboard & Sub-view States
+  const [activeTab, setActiveTab] = useState('home'); // home, service_request
+  const [guardSubView, setGuardSubView] = useState('home'); // home, register, scan
+  const [serviceLogs, setServiceLogs] = useState([
+    { id: '1', issue: 'Plumbing', status: 'Resolved', date: '2026-04-28' },
+    { id: '2', issue: 'Electrical', status: 'In Progress', date: '2026-04-30' }
+  ]);
 
-  const Onboarding = () => (
-    <View style={styles.onboardingContainer}>
-      <Image
-        source={{ uri: 'https://images.unsplash.com/photo-1558002038-1037906d8959?w=800' }}
-        style={styles.onboardingImage}
-      />
-      <Text style={styles.onboardingTitle}>MyGate Secure</Text>
-      <Text style={styles.onboardingSub}>
-        Premium society management for modern living. Security and convenience at your fingertips.
-      </Text>
-      <TouchableOpacity style={styles.mainButton} onPress={() => setStep('login')}>
-        <Text style={styles.mainButtonText}>Enter Society</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  // --- HANDLERS ---
 
-
-  const renderDashboard = () => {
-    switch(role) {
-      case 'resident': return (
-        <View>
-          <Text style={styles.sectionTitle}>Quick Approvals</Text>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Zomato Delivery</Text>
-            <Text style={styles.cardSub}>Waiting at Main Gate</Text>
-            <View style={styles.rowBetween}>
-              <TouchableOpacity style={styles.smallBtnSuccess}><Text style={styles.btnText}>Allow</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.smallBtnDanger}><Text style={styles.btnText}>Deny</Text></TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      );
-      case 'guard': return (
-        <View>
-          <Text style={styles.sectionTitle}>Gate Entry</Text>
-          <TextInput style={styles.modernInput} placeholder="Visitor Name" placeholderTextColor={COLORS.textMuted} />
-          <TextInput style={styles.modernInput} placeholder="Flat Number" placeholderTextColor={COLORS.textMuted} />
-          <TouchableOpacity style={styles.mainButton}><Text style={styles.mainButtonText}>Check In</Text></TouchableOpacity>
-        </View>
-      );
-      case 'maid': return (
-        <View>
-          <Text style={styles.sectionTitle}>My Schedule</Text>
-          <View style={styles.card}><Text style={styles.cardTitle}>Flat 402 - 08:00 AM</Text></View>
-          <View style={styles.card}><Text style={styles.cardTitle}>Flat 105 - 10:30 AM</Text></View>
-        </View>
-      );
-      case 'staff': return (
-        <View>
-          <Text style={styles.sectionTitle}>Pending Repairs</Text>
-          <View style={styles.card}><Text style={styles.cardTitle}>🔧 Lift B2 Calibration</Text></View>
-          <View style={styles.card}><Text style={styles.cardTitle}>🧹 Lobby Cleaning</Text></View>
-        </View>
-      );
-      case 'admin': return (
-        <View>
-          <Text style={styles.sectionTitle}>Admin Controls</Text>
-          <TouchableOpacity style={styles.card}><Text style={styles.cardTitle}>View Society Analytics</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.card}><Text style={styles.cardTitle}>User Management</Text></TouchableOpacity>
-        </View>
-      );
-      default: return null;
-    }
+  const handleExit = () => {
+    setCurrentStep('onboarding');
+    setUserRole('');
+    setUserName('');
+    setPhoneNumber('');
+    setOtp('');
+    setActiveTab('home');
+    setGuardSubView('home');
   };
 
+  const submitServiceRequest = (issue) => {
+    const newRequest = {
+      id: Date.now().toString(),
+      issue: issue,
+      status: 'Pending',
+      date: new Date().toISOString().split('T')[0]
+    };
+    setServiceLogs([newRequest, ...serviceLogs]);
+    Alert.alert("Request Raised", `Your ${issue} request has been logged.`);
+    setActiveTab('home');
+  };
 
-  if (step === 'onboarding') return <Onboarding />;
+  const sharePreApproval = () => {
+    const code = Math.floor(100000 + Math.random() * 900000);
+    Share.share({
+      message: `MyGate Secure: Use Passcode ${code} or scan the QR for entry to Flat ${userName}'s residence.`,
+    });
+  };
 
-  if (step === 'login') {
+  // --- UI SCREENS ---
+
+  if (currentStep === 'onboarding') {
     return (
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.authWrapper}>
-        <StatusBar barStyle="light-content" />
-        <View style={styles.loginHeader}>
-          <Text style={styles.loginTitle}>Welcome</Text>
-          <Text style={styles.loginSub}>Sign in to your society portal</Text>
-        </View>
-
-        <View style={styles.loginCard}>
-          <Text style={styles.inputLabel}>Mobile Number</Text>
-          <TextInput
-            style={styles.modernInput}
-            placeholder="98765 43210"
-            placeholderTextColor={COLORS.textMuted}
-            keyboardType="number-pad"
-            maxLength={10}
-            value={phone}
-            onChangeText={setPhone}
-          />
-
-          <Text style={styles.inputLabel}>Select Your Role</Text>
-          <View style={styles.roleGrid}>
-            {['resident', 'guard', 'admin', 'maid', 'staff'].map(r => (
-              <TouchableOpacity
-                key={r}
-                style={[styles.rolePill, role === r && styles.rolePillActive]}
-                onPress={() => setRole(r as any)}
-              >
-                <Text style={[styles.rolePillText, role === r && styles.rolePillTextActive]}>{r}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TouchableOpacity
-            style={[styles.mainButton, !role && { opacity: 0.5 }]}
-            onPress={() => role ? setStep('otp') : Alert.alert('Error', 'Please select a role')}
-          >
-            <Text style={styles.mainButtonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+      <View style={styles.centerBox}>
+        <Image source={{ uri: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200' }} style={styles.heroImg} />
+        <Text style={styles.brandName}>MyGate Secure</Text>
+        <TouchableOpacity style={styles.bigButton} onPress={() => setCurrentStep('login')}>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
-  if (step === 'otp') {
+  if (currentStep === 'login') {
     return (
-      <View style={styles.authWrapper}>
-        <View style={styles.loginHeader}>
-          <Text style={styles.loginTitle}>Verification</Text>
-          <Text style={styles.loginSub}>Enter the 6-digit code sent to {phone}</Text>
+      <View style={styles.authLayout}>
+        <Text style={styles.titleLg}>Sign In</Text>
+        <View style={styles.cardDark}>
+          <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor={THEME.muted} value={userName} onChangeText={setUserName} />
+          <TextInput style={styles.input} placeholder="10 Digit Mobile" placeholderTextColor={THEME.muted} keyboardType="numeric" maxLength={10} value={phoneNumber} onChangeText={(val) => setPhoneNumber(val.replace(/[^0-9]/g, ''))} />
+          <Text style={styles.labelSmall}>Select Role</Text>
+          <View style={styles.roleRow}>
+            {['resident', 'guard', 'admin', 'maid', 'staff'].map(role => (
+              <TouchableOpacity key={role} style={[styles.tag, userRole === role && styles.tagActive]} onPress={() => setUserRole(role)}>
+                <Text style={[styles.tagText, userRole === role && {color: '#fff'}]}>{role.toUpperCase()}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity style={styles.bigButton} onPress={() => (userRole && phoneNumber.length === 10) ? setCurrentStep('otp') : Alert.alert("Error", "Required: Name, 10-digit Phone, & Role")}>
+            <Text style={styles.buttonText}>Send 6-Digit OTP</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.loginCard}>
-          <TextInput
-            style={[styles.modernInput, styles.otpInput]}
-            placeholder="000 000"
-            placeholderTextColor={COLORS.textMuted}
-            keyboardType="number-pad"
-            maxLength={6}
-            value={otp}
-            onChangeText={setOtp}
-          />
-          <TouchableOpacity style={styles.mainButton} onPress={() => setStep('dashboard')}>
-            <Text style={styles.mainButtonText}>Verify & Login</Text>
+      </View>
+    );
+  }
+
+  if (currentStep === 'otp') {
+    return (
+      <View style={styles.authLayout}>
+        <Text style={styles.titleLg}>Verify OTP</Text>
+        <View style={styles.cardDark}>
+          <TextInput style={[styles.input, {textAlign: 'center', letterSpacing: 8}]} placeholder="000000" keyboardType="numeric" maxLength={6} value={otp} onChangeText={setOtp} />
+          <TouchableOpacity style={styles.bigButton} onPress={() => otp.length === 6 ? setCurrentStep('dashboard') : Alert.alert("Error", "Enter 6 digits")}>
+            <Text style={styles.buttonText}>Verify & Enter</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -176,61 +126,147 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
-      <ScrollView style={styles.dashboardBody}>
-        <View style={styles.dashHeader}>
+    <SafeAreaView style={styles.mainContainer}>
+      <View style={styles.navBar}>
+        <View><Text style={styles.dashHead}>MyGate</Text><Text style={styles.roleBadge}>{userRole.toUpperCase()}</Text></View>
+        <TouchableOpacity onPress={handleExit} style={styles.exitBtn}><Text style={{ color: THEME.red, fontWeight: 'bold' }}>LOGOUT</Text></TouchableOpacity>
+      </View>
+
+      <ScrollView style={{ paddingHorizontal: 20 }}>
+
+        {/* RESIDENT DASHBOARD */}
+        {userRole === 'resident' && (
           <View>
-            <Text style={styles.dashTitle}>Dashboard</Text>
-            <Text style={styles.dashRole}>{role.toUpperCase()} ACCOUNT</Text>
+            {activeTab === 'home' ? (
+              <>
+                <View style={styles.announcementCard}>
+                  <Text style={{color: THEME.amber, fontWeight: 'bold'}}>📢 Society Announcement</Text>
+                  <Text style={{color: '#fff', marginTop: 5}}>Elevator B maintenance scheduled for today.</Text>
+                </View>
+
+                <Text style={styles.subTitle}>Quick Actions</Text>
+                <View style={{flexDirection: 'row', gap: 10, marginBottom: 20}}>
+                  <TouchableOpacity style={styles.actionBtn} onPress={() => setActiveTab('service_request')}>
+                    <Text style={{fontSize: 20}}>🛠️</Text>
+                    <Text style={{color: '#fff', fontSize: 12, marginTop: 5}}>Service Req</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionBtn} onLongPress={() => Alert.alert("SOS Sent", "Security Alerted")}>
+                    <Text style={{fontSize: 20}}>🚨</Text>
+                    <Text style={{color: '#fff', fontSize: 12, marginTop: 5}}>Emergency</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={styles.subTitle}>Pre-Approve Guest</Text>
+                <View style={styles.cardDark}>
+                  <View style={{alignItems: 'center', marginBottom: 15}}>
+                    <View style={styles.qrPlaceholder}><Text style={{color: '#000', fontWeight: 'bold'}}>QR CODE</Text></View>
+                    <Text style={[styles.titleLg, {marginTop: 10, letterSpacing: 4}]}>449 201</Text>
+                  </View>
+                  <TouchableOpacity style={styles.bigButton} onPress={sharePreApproval}><Text style={styles.buttonText}>Share Invite & QR</Text></TouchableOpacity>
+                </View>
+
+                <Text style={styles.subTitle}>Recent Service Logs</Text>
+                {serviceLogs.map(log => (
+                  <View key={log.id} style={styles.listItem}>
+                    <View><Text style={styles.cardHeader}>{log.issue}</Text><Text style={{color: THEME.muted, fontSize: 11}}>{log.date}</Text></View>
+                    <Text style={{color: log.status === 'Resolved' ? THEME.emerald : THEME.amber, fontWeight: 'bold'}}>{log.status}</Text>
+                  </View>
+                ))}
+              </>
+            ) : (
+              <View style={styles.cardDark}>
+                <TouchableOpacity onPress={() => setActiveTab('home')}><Text style={{color: THEME.emerald, marginBottom: 15}}>← Back to Dashboard</Text></TouchableOpacity>
+                <Text style={[styles.subTitle, {marginTop: 0}]}>New Service Request</Text>
+                <Text style={styles.labelSmall}>Select Issue Type</Text>
+                {['Plumbing', 'Electrical', 'Carpentry', 'AC Repair', 'Cleaning'].map(item => (
+                  <TouchableOpacity key={item} style={styles.selectItem} onPress={() => submitServiceRequest(item)}>
+                    <Text style={{color: '#fff'}}>{item}</Text>
+                    <Text style={{color: THEME.emerald}}>+</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
-          <TouchableOpacity onPress={() => setStep('login')}><Text style={{color: COLORS.danger}}>Logout</Text></TouchableOpacity>
-        </View>
-        {renderDashboard()}
+        )}
+
+        {/* GUARD DASHBOARD */}
+        {userRole === 'guard' && (
+          <View>
+            {guardSubView === 'home' && (
+              <>
+                <TouchableOpacity style={styles.scanAction} onPress={() => setGuardSubView('scan')}>
+                  <Text style={styles.scanText}>📷 SCAN QR / ENTER CODE</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.bigButton, {backgroundColor: THEME.slate}]} onPress={() => setGuardSubView('register')}>
+                  <Text style={styles.buttonText}>📝 REGISTER NEW VISITOR</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {guardSubView === 'register' && (
+              <View style={styles.cardDark}>
+                <TouchableOpacity onPress={() => setGuardSubView('home')}><Text style={{color: THEME.emerald, marginBottom: 15}}>← Back</Text></TouchableOpacity>
+                <TextInput style={styles.input} placeholder="Visitor Name" placeholderTextColor={THEME.muted} />
+                <TextInput style={styles.input} placeholder="Visitor Phone (10 digits)" keyboardType="numeric" maxLength={10} placeholderTextColor={THEME.muted} />
+                <TextInput style={styles.input} placeholder="Flat Number" placeholderTextColor={THEME.muted} />
+                <TextInput style={styles.input} placeholder="Purpose" placeholderTextColor={THEME.muted} />
+                <View style={{flexDirection: 'row', gap: 10}}>
+                  <TouchableOpacity style={[styles.bigButton, {flex: 1, backgroundColor: THEME.amber}]} onPress={() => Alert.alert("Calling...", "Resident has been contacted.")}><Text style={styles.buttonText}>📞 CALL</Text></TouchableOpacity>
+                  <TouchableOpacity style={[styles.bigButton, {flex: 1}]} onPress={() => {Alert.alert("Success", "Request sent to resident."); setGuardSubView('home');}}><Text style={styles.buttonText}>SUBMIT</Text></TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {guardSubView === 'scan' && (
+              <View style={styles.cardDark}>
+                <TouchableOpacity onPress={() => setGuardSubView('home')}><Text style={{color: THEME.emerald, marginBottom: 15}}>← Back</Text></TouchableOpacity>
+                <TextInput style={styles.input} placeholder="Enter Passcode" keyboardType="numeric" maxLength={6} />
+                <TouchableOpacity style={styles.bigButton} onPress={() => {Alert.alert("Verified", "Access Granted"); setGuardSubView('home');}}><Text style={styles.buttonText}>VERIFY</Text></TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* OTHER ROLES */}
+        {['admin', 'maid', 'staff'].includes(userRole) && (
+          <View style={styles.cardDark}>
+            <Text style={styles.cardHeader}>{userRole.toUpperCase()} Dashboard</Text>
+            <Text style={{color: THEME.muted, marginTop: 10}}>Feature implementation pending for next phase.</Text>
+          </View>
+        )}
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeContainer: { flex: 1, backgroundColor: COLORS.background },
-  // Onboarding
-  onboardingContainer: { flex: 1, backgroundColor: COLORS.background, padding: 30, justifyContent: 'center', alignItems: 'center' },
-  onboardingImage: { width: width * 0.85, height: 350, borderRadius: 30, marginBottom: 40 },
-  onboardingTitle: { fontSize: 34, fontWeight: 'bold', color: COLORS.white },
-  onboardingSub: { fontSize: 16, color: COLORS.textMuted, textAlign: 'center', marginTop: 15, marginBottom: 40, lineHeight: 24 },
-
-  // Login Screen
-  authWrapper: { flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', padding: 25 },
-  loginHeader: { marginBottom: 40 },
-  loginTitle: { fontSize: 40, fontWeight: 'bold', color: COLORS.white },
-  loginSub: { fontSize: 18, color: COLORS.textMuted, marginTop: 5 },
-  loginCard: { backgroundColor: COLORS.cardBg, padding: 25, borderRadius: 24, borderWidth: 1, borderColor: COLORS.border },
-  inputLabel: { color: COLORS.textMuted, fontSize: 14, marginBottom: 8, fontWeight: '600' },
-  modernInput: { backgroundColor: COLORS.background, color: COLORS.white, padding: 18, borderRadius: 12, fontSize: 18, marginBottom: 25, borderWidth: 1, borderColor: COLORS.border },
-  otpInput: { textAlign: 'center', letterSpacing: 10, fontSize: 24, fontWeight: 'bold' },
-
-  // Role Selection
-  roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 30 },
-  rolePill: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border },
-  rolePillActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  rolePillText: { color: COLORS.textMuted, fontWeight: 'bold', textTransform: 'capitalize' },
-  rolePillTextActive: { color: COLORS.white },
-
-  // Dashboard
-  dashboardBody: { flex: 1, padding: 20 },
-  dashHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30, marginTop: 20 },
-  dashTitle: { fontSize: 28, fontWeight: 'bold', color: COLORS.white },
-  dashRole: { fontSize: 12, color: COLORS.accent, fontWeight: 'bold', letterSpacing: 1 },
-  sectionTitle: { fontSize: 20, fontWeight: '700', color: COLORS.white, marginBottom: 15 },
-  card: { backgroundColor: COLORS.cardBg, padding: 20, borderRadius: 20, marginBottom: 15, borderWidth: 1, borderColor: COLORS.border },
-  cardTitle: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
-  cardSub: { color: COLORS.textMuted, fontSize: 14, marginTop: 4, marginBottom: 15 },
-
-  // Buttons
-  mainButton: { backgroundColor: COLORS.primary, padding: 20, borderRadius: 15, alignItems: 'center' },
-  mainButtonText: { color: COLORS.white, fontSize: 18, fontWeight: 'bold' },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between' },
-  smallBtnSuccess: { backgroundColor: COLORS.primary, padding: 12, borderRadius: 10, width: '48%', alignItems: 'center' },
-  smallBtnDanger: { backgroundColor: COLORS.danger, padding: 12, borderRadius: 10, width: '48%', alignItems: 'center' },
-  btnText: { color: COLORS.white, fontWeight: 'bold' }
+  mainContainer: { flex: 1, backgroundColor: THEME.navy },
+  centerBox: { flex: 1, backgroundColor: THEME.navy, alignItems: 'center', justifyContent: 'center', padding: 25 },
+  heroImg: { width: width * 0.9, height: 320, borderRadius: 24, marginBottom: 20 },
+  brandName: { fontSize: 32, fontWeight: 'bold', color: THEME.white, marginBottom: 30 },
+  authLayout: { flex: 1, backgroundColor: THEME.navy, justifyContent: 'center', padding: 25 },
+  titleLg: { fontSize: 32, fontWeight: 'bold', color: THEME.white, marginBottom: 15 },
+  cardDark: { backgroundColor: THEME.slate, padding: 20, borderRadius: 20, marginBottom: 20 },
+  labelSmall: { color: THEME.muted, fontSize: 10, fontWeight: 'bold', marginBottom: 10 },
+  input: { backgroundColor: THEME.navy, color: THEME.white, padding: 15, borderRadius: 12, marginBottom: 15, fontSize: 16 },
+  roleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 25 },
+  tag: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: THEME.border },
+  tagActive: { backgroundColor: THEME.emerald, borderColor: THEME.emerald },
+  tagText: { color: THEME.muted, fontSize: 10, fontWeight: 'bold' },
+  navBar: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: THEME.border },
+  dashHead: { fontSize: 20, fontWeight: 'bold', color: THEME.white },
+  roleBadge: { color: THEME.amber, fontSize: 9, fontWeight: 'bold' },
+  exitBtn: { padding: 8, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: 8 },
+  subTitle: { fontSize: 18, color: THEME.white, fontWeight: 'bold', marginVertical: 15 },
+  announcementCard: { backgroundColor: THEME.navy, padding: 15, borderRadius: 15, borderWidth: 1, borderColor: THEME.amber, marginBottom: 10 },
+  actionBtn: { backgroundColor: THEME.slate, padding: 15, borderRadius: 15, width: 100, alignItems: 'center' },
+  qrPlaceholder: { width: 120, height: 120, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', borderRadius: 15 },
+  listItem: { backgroundColor: THEME.slate, padding: 15, borderRadius: 15, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  selectItem: { padding: 15, backgroundColor: THEME.navy, borderRadius: 10, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' },
+  cardHeader: { color: THEME.white, fontWeight: 'bold' },
+  scanAction: { backgroundColor: THEME.emerald, padding: 22, borderRadius: 15, alignItems: 'center', marginBottom: 15 },
+  scanText: { fontWeight: 'bold', color: '#fff' },
+  bigButton: { backgroundColor: THEME.emerald, padding: 18, borderRadius: 12, alignItems: 'center' },
+  buttonText: { color: '#fff', fontWeight: 'bold' }
 });
