@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resident Dashboard</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        #approveSection {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        /* The custom popup notification */
+        .toast-popup {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #4CAF50; /* Green */
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            right: 30px;
+            top: 30px;
+            font-size: 17px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.4s, visibility 0.4s;
+        }
+        .toast-popup.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .toast-popup.error {
+            background-color: #f44336; /* Red */
+        }
+    </style>
+</head>
+<body>
+    <div id="toastPopup" class="toast-popup"></div>
+
+    <div class="container">
+        <h2>Resident Portal</h2>
+        
+        <button onclick="toggleApproveForm()">Approve Visitor</button>
+        
+        <div id="approveSection">
+            <h3 style="margin-top: 0;">Enter Code</h3>
+            <input type="text" id="passCodeInput" placeholder="Enter 9-Character Code" maxlength="9">
+            <button onclick="submitApproval()">Confirm Approval</button>
+        </div>
+
+        <button onclick="executeAction('/resident/bills', 'GET')">View Bills</button>
+        <button onclick="executeAction('/resident/manage-vehicles', 'POST', {vehicleNumber: 'MH01'})">Manage Vehicles</button>
+        <button onclick="executeAction('/resident/file-complaint', 'POST', {title: 'Plumbing', description: 'Leak'})">File Complaint</button>
+        <button onclick="executeAction('/resident/hire-maid', 'POST', {maidName: 'Anita'})">Hire Maid</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script src="../jwt-auth.js"></script>
+    <script>
+        function toggleApproveForm() {
+            const form = document.getElementById('approveSection');
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        }
+
+        function showPopup(message, isSuccess = true) {
+            const popup = document.getElementById('toastPopup');
+            popup.innerText = message;
+            
+            if (isSuccess) {
+                popup.classList.remove('error');
+            } else {
+                popup.classList.add('error');
+            }
+            
+            popup.classList.add('show');
+            
+            // Hide after 4 seconds
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+        }
+
+        function submitApproval() {
+            const passCode = document.getElementById('passCodeInput').value;
+            if (!passCode) {
+                showPopup("Please enter the passcode.", false);
+                return;
+            }
+            
+            authenticatedFetch('/resident/approve-visitor', 'POST', { passCode })
+                .then(data => {
+                    if (data.success) {
+                        // Show success popup with details
+                        showPopup(`✅ Visitor Approved!\nName: ${data.data.visitorName}\nReason: ${data.data.reasonOfVisit}`);
+                        document.getElementById('passCodeInput').value = '';
+                        toggleApproveForm(); // Hide dropdown after success
+                    } else {
+                        // Show error popup
+                        showPopup('❌ Approval Failed: ' + data.error, false);
+                    }
+                });
+        }
+
+        function executeAction(endpoint, method, body = null) {
+            authenticatedFetch(endpoint, method, body).then(data => alert(JSON.stringify(data.data)));
+        }
+    </script>
+</body>
+</html>

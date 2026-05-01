@@ -1,0 +1,228 @@
+{
+  "_ids": {
+    "users": 6,
+    "visitors": 3,
+    "vehicles": 1,
+    "complaints": 2,
+    "staff": 4,
+    "devices": 6,
+    "residents": 4,
+    "checkpoints": 5,
+    "patrol_logs": 1
+  },
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@mygate.com",
+      "password": "$2a$10$8GJPz7iONV4g0q79WfA6FO2H/lJlJ7KJn.oyGX3CBSLI1CgtuRLMq",
+      "role": "admin",
+      "name": "Admin User",
+      "apartment": "A-001"
+    },
+    {
+      "id": 2,
+      "email": "guard@mygate.com",
+      "password": "$2a$10$7B67j1Eo8Y.Xq9GZ/5dgueS141/CgQpCiskyxxKJdGHPmryJ4sZ62",
+      "role": "guard",
+      "name": "Security Guard",
+      "apartment": "G-001"
+    },
+    {
+      "id": 3,
+      "email": "resident@mygate.com",
+      "password": "$2a$10$WMrxI0P2Hdeuq8FfjgZ0cukk4Aa0jlmVRBgnnv.h36/Bfej7y3nAa",
+      "role": "resident",
+      "name": "John Resident",
+      "apartment": "B-202"
+    },
+    {
+      "id": 4,
+      "email": "staff@mygate.com",
+      "password": "$2a$10$cg7oDZKmB2rxKTAXm0CnkeSGqQtYltNS02hHwGwXSYt3tprJyIWeO",
+      "role": "staff",
+      "name": "Staff Member",
+      "apartment": "S-001"
+    },
+    {
+      "id": 5,
+      "email": "maid@mygate.com",
+      "password": "$2a$10$DyBA6yOmWl9NEuRNqexxe.pua1Wz19xnuKieMN0wCPaQEnhDUm.uS",
+      "role": "maid",
+      "name": "Maid Worker",
+      "apartment": null
+    }
+  ],
+  "pending_visitors": [
+    {
+      "id": 1,
+      "visitor_name": "Adam",
+      "apartment_number": "A-101",
+      "contact_number": "9876543210",
+      "reason_of_visit": "Family",
+      "pass_code": "TYD9J4BN",
+      "status": "approved",
+      "registered_at": "2026-05-01T01:54:06.603Z",
+      "approved_at": "2026-05-01T01:54:06.603Z"
+    },
+    {
+      "id": 2,
+      "visitor_name": "Sam",
+      "apartment_number": "B-303",
+      "contact_number": "9654321870",
+      "reason_of_visit": "Delivery",
+      "pass_code": "UQJHY8P9",
+      "status": "approved",
+      "registered_at": "2026-05-01T01:54:59.149Z",
+      "approved_at": "2026-05-01T01:55:35.863Z"
+    }
+  ],
+  "vehicles": [],
+  "complaints": [
+    {
+      "id": 1,
+      "resident_id": "3",
+      "subject": "Noise Complaint",
+      "description": "My neighbor plays music till late night",
+      "status": "open",
+      "created_at": "2026-05-01T02:05:08.240Z"
+    }
+  ],
+  "staff": [
+    {
+      "id": 1,
+      "name": "Rajesh Kumar",
+      "role": "Plumber",
+      "phone": "9111111111",
+      "apartment": "A-Block",
+      "status": "active",
+      "check_in": "2026-05-01T01:52:44.754Z",
+      "check_out": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 2,
+      "name": "Sunita Devi",
+      "role": "Maid",
+      "phone": "9222222222",
+      "apartment": "B-Block",
+      "status": "active",
+      "check_in": "2026-05-01T01:52:44.755Z",
+      "check_out": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 3,
+      "name": "Ahmed Khan",
+      "role": "Electrician",
+      "phone": "9333333333",
+      "apartment": "C-Block",
+      "status": "inactive",
+      "check_in": "2026-05-01T01:52:44.755Z",
+      "check_out": "2026-05-01T01:52:44.755Z",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    }
+  ],
+  "devices": [
+    {
+      "id": 1,
+      "name": "Main Gate Camera",
+      "type": "camera",
+      "location": "Main Gate",
+      "status": "online",
+      "last_action": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 2,
+      "name": "Parking Sensor",
+      "type": "sensor",
+      "location": "Parking",
+      "status": "online",
+      "last_action": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 3,
+      "name": "Lift Camera",
+      "type": "camera",
+      "location": "Lift",
+      "status": "online",
+      "last_action": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 4,
+      "name": "Pool Light",
+      "type": "light",
+      "location": "Pool Area",
+      "status": "online",
+      "last_action": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 5,
+      "name": "Entry Intercom",
+      "type": "intercom",
+      "location": "Main Entry",
+      "status": "offline",
+      "last_action": null,
+      "created_at": "2026-05-01T01:52:44.755Z"
+    }
+  ],
+  "residents": [
+    {
+      "id": 1,
+      "name": "John Resident",
+      "email": "resident@mygate.com",
+      "apartment": "B-202",
+      "phone": "9876543210",
+      "status": "active",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 2,
+      "name": "Priya Sharma",
+      "email": "priya@mygate.com",
+      "apartment": "C-101",
+      "phone": "9876543211",
+      "status": "active",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 3,
+      "name": "Ravi Kumar",
+      "email": "ravi@mygate.com",
+      "apartment": "A-303",
+      "phone": "9876543212",
+      "status": "active",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    }
+  ],
+  "patrol_checkpoints": [
+    {
+      "id": 1,
+      "name": "Gate A",
+      "location": "North Entry",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 2,
+      "name": "Gate B",
+      "location": "South Entry",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 3,
+      "name": "Parking",
+      "location": "Basement",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    },
+    {
+      "id": 4,
+      "name": "Pool Area",
+      "location": "Garden",
+      "created_at": "2026-05-01T01:52:44.755Z"
+    }
+  ],
+  "patrol_logs": []
+}

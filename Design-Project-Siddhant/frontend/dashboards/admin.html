@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard – MyGate</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+        /* ── Top bar ─────────────────────────────────── */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+        .top-bar h2 { margin: 0; font-size: 22px; color: #fff; }
+        .top-btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .logout-btn { background: #f44336; color: #fff; }
+
+        /* ── Stat cards ──────────────────────────────── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 28px; }
+        .stat-card { background: rgba(255,255,255,0.07); border-radius: 12px; padding: 18px 14px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-card .num { font-size: 32px; font-weight: 700; color: #ffd400; }
+        .stat-card .label { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+        /* ── Tabs ─────────────────────────────────────── */
+        .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .tab-btn { padding: 9px 18px; border: none; border-radius: 20px; cursor: pointer;
+                   background: rgba(255,255,255,0.08); color: #ddd; font-size: 13px; transition: .2s; }
+        .tab-btn.active { background: #ffd400; color: #000; font-weight: 700; }
+
+        /* ── Panels ──────────────────────────────────── */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── Form row ─────────────────────────────────── */
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .form-row input, .form-row select { flex: 1 1 150px; padding: 10px 12px;
+            border-radius: 8px; border: 1px solid #333; background: #1e2130; color: #eee; font-size: 13px; }
+        .form-row button { padding: 10px 20px; background: #ffd400; color: #000; border: none;
+            border-radius: 8px; cursor: pointer; font-weight: 700; white-space: nowrap; }
+
+        /* ── Table ─────────────────────────────────────── */
+        .tbl-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1e2130; padding: 10px 12px; text-align: left; color: #aaa; }
+        td { padding: 9px 12px; border-bottom: 1px solid #1e2130; }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+
+        /* ── Status badges ─────────────────────────────── */
+        .badge { padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge-green  { background: #1b5e20; color: #69f0ae; }
+        .badge-yellow { background: #4a3900; color: #ffd400; }
+        .badge-red    { background: #4a1515; color: #ff6b6b; }
+        .badge-blue   { background: #0d3b6e; color: #90caf9; }
+
+        /* ── Action buttons in table ──────────────────── */
+        .act-btn { padding: 4px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 2px; }
+        .act-green  { background: #1b5e20; color: #69f0ae; }
+        .act-red    { background: #4a1515; color: #ff6b6b; }
+        .act-yellow { background: #4a3900; color: #ffd400; }
+
+        /* ── Device card grid ─────────────────────────── */
+        .device-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 14px; margin-top: 16px; }
+        .device-card { background: #1e2130; border-radius: 12px; padding: 18px; border: 1px solid #2a2d3e; }
+        .device-card h4 { margin: 0 0 6px; font-size: 15px; }
+        .device-card .meta { font-size: 12px; color: #888; margin-bottom: 12px; }
+        .device-card button { width: 100%; padding: 9px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; }
+        .btn-open  { background: #1b5e20; color: #69f0ae; }
+        .btn-close { background: #4a1515; color: #ff6b6b; }
+
+        /* ── Toast ─────────────────────────────────────── */
+        #toast { position: fixed; top: 24px; right: 24px; background: #333; color: #fff;
+            padding: 12px 20px; border-radius: 10px; font-size: 14px; opacity: 0;
+            transition: .3s; pointer-events: none; z-index: 9999; }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="container">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <h2>🏠 Admin Portal</h2>
+        <div style="display:flex;gap:8px">
+            <button class="top-btn" style="background:#2196F3;color:#fff" onclick="loadStats()">↻ Refresh</button>
+            <button class="top-btn logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="num" id="s-pending">–</div><div class="label">Pending Visitors</div></div>
+        <div class="stat-card"><div class="num" id="s-staff">–</div><div class="label">Staff Today</div></div>
+        <div class="stat-card"><div class="num" id="s-patrol">–</div><div class="label">Patrol Logs Today</div></div>
+        <div class="stat-card"><div class="num" id="s-devices">–</div><div class="label">Devices Online</div></div>
+        <div class="stat-card"><div class="num" id="s-residents">–</div><div class="label">Total Residents</div></div>
+        <div class="stat-card"><div class="num" id="s-vehicles">–</div><div class="label">Vehicles Today</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('visitors',this)">👥 Visitors</button>
+        <button class="tab-btn" onclick="showTab('staff',this)">🧹 Staff</button>
+        <button class="tab-btn" onclick="showTab('patrol',this)">🗺 Patrol</button>
+        <button class="tab-btn" onclick="showTab('devices',this)">🔌 Devices</button>
+        <button class="tab-btn" onclick="showTab('residents',this)">🏘 Residents</button>
+        <button class="tab-btn" onclick="showTab('vehicles',this)">🚗 Vehicles</button>
+    </div>
+
+    <!-- ══ VISITORS ══════════════════════════════════════════════════════ -->
+    <div class="panel active" id="panel-visitors">
+        <h3>Add Visitor</h3>
+        <div class="form-row">
+            <input id="v-name" placeholder="Full Name">
+            <select id="v-type">
+                <option value="guest">👤 Guest</option>
+                <option value="delivery">📦 Delivery</option>
+                <option value="cab">🚕 Cab</option>
+            </select>
+            <input id="v-phone" placeholder="Phone">
+            <input id="v-vehicle" placeholder="Vehicle No (optional)">
+            <input id="v-resident" placeholder="Resident ID (optional)" type="number">
+            <button onclick="addVisitor()">✅ Approve</button>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Phone</th><th>Vehicle</th><th>Status</th><th>Arrival</th><th>Actions</th></tr></thead>
+                <tbody id="visitor-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ STAFF ═════════════════════════════════════════════════════════ -->
+    <div class="panel" id="panel-staff">
+        <h3>Record Staff Entry</h3>
+        <div class="form-row">
+            <input id="st-name" placeholder="Staff Name">
+            <select id="st-type">
+                <option value="maid">🧹 Maid</option>
+                <option value="cook">👨‍🍳 Cook</option>
+                <option value="driver">🚗 Driver</option>
+                <option value="gardener">🌿 Gardener</option>
+            </select>
+            <input id="st-phone" placeholder="Phone (optional)">
+            <input id="st-resident" placeholder="Resident ID" type="number">
+            <button onclick="addStaff()">✅ Record Entry</button>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Resident</th><th>Entry</th><th>Exit</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="staff-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ PATROL ════════════════════════════════════════════════════════ -->
+    <div class="panel" id="panel-patrol">
+        <h3>Add Checkpoint</h3>
+        <div class="form-row">
+            <input id="cp-name" placeholder="Checkpoint Name">
+            <input id="cp-loc" placeholder="Location (e.g. Block A)">
+            <button onclick="addCheckpoint()">➕ Add</button>
+        </div>
+        <h3>Record Patrol Log</h3>
+        <div class="form-row">
+            <input id="pl-guard" placeholder="Guard ID / Name">
+            <select id="pl-cp"></select>
+            <input id="pl-gps" placeholder="GPS (lat,lng) – optional">
+            <button onclick="recordPatrol()">📍 Log Patrol</button>
+        </div>
+        <h4>Checkpoints</h4>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Location</th></tr></thead>
+                <tbody id="cp-tbody"></tbody>
+            </table>
+        </div>
+        <h4 style="margin-top:20px">Recent Patrol Logs</h4>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>Guard</th><th>Checkpoint</th><th>GPS</th><th>Time</th></tr></thead>
+                <tbody id="pl-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ DEVICES ═══════════════════════════════════════════════════════ -->
+    <div class="panel" id="panel-devices">
+        <h3>Add Device</h3>
+        <div class="form-row">
+            <input id="dv-name" placeholder="Device Name">
+            <select id="dv-type">
+                <option value="lock">🔒 Smart Lock</option>
+                <option value="barrier">🚧 Boom Barrier</option>
+                <option value="bell">🔔 Calling Bell</option>
+            </select>
+            <input id="dv-loc" placeholder="Location">
+            <button onclick="addDevice()">➕ Add Device</button>
+        </div>
+        <div class="device-grid" id="device-grid"></div>
+    </div>
+
+    <!-- ══ RESIDENTS ═════════════════════════════════════════════════════ -->
+    <div class="panel" id="panel-residents">
+        <h3>Add Resident</h3>
+        <div class="form-row">
+            <input id="res-name" placeholder="Full Name">
+            <input id="res-flat" placeholder="Flat Number (e.g. A-101)">
+            <input id="res-phone" placeholder="Phone">
+            <button onclick="addResident()">➕ Add Resident</button>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Flat</th><th>Phone</th><th>Action</th></tr></thead>
+                <tbody id="res-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ VEHICLES ══════════════════════════════════════════════════════ -->
+    <div class="panel" id="panel-vehicles">
+        <h3>Vehicles Logged Today (by Guard)</h3>
+        <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>Vehicle No.</th><th>Category</th><th>Time Logged</th></tr></thead>
+                <tbody id="veh-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="../jwt-auth.js"></script>
+<script>
+const BASE = 'http://localhost:8080/api/v2/admin';
+
+// ── helpers ─────────────────────────────────────────────────────────────────
+function api(path, method = 'GET', body = null) {
+    return authenticatedFetch('/admin' + path, method, body);
+}
+function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+}
+function badge(status) {
+    const map = { approved:'badge-green', pending:'badge-yellow', denied:'badge-red',
+                  Inside:'badge-green', Exited:'badge-blue', open:'badge-green', closed:'badge-red' };
+    return `<span class="badge ${map[status]||'badge-yellow'}">${status}</span>`;
+}
+
+// ── tabs ─────────────────────────────────────────────────────────────────────
+function showTab(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+    // lazy-load
+    const loaders = { visitors: loadVisitors, staff: loadStaff, patrol: loadPatrol,
+                      devices: loadDevices, residents: loadResidents, vehicles: loadVehicles };
+    if (loaders[name]) loaders[name]();
+}
+
+// ── stats ────────────────────────────────────────────────────────────────────
+function loadStats() {
+    api('/stats').then(r => {
+        if (!r.success) return;
+        const d = r.data;
+        document.getElementById('s-pending').textContent   = d.pendingVisitors    ?? '–';
+        document.getElementById('s-staff').textContent     = d.staffToday         ?? '–';
+        document.getElementById('s-patrol').textContent    = d.patrolLogsToday    ?? '–';
+        document.getElementById('s-devices').textContent   = d.devicesOnline      ?? '–';
+        document.getElementById('s-residents').textContent = d.totalResidents     ?? '–';
+        document.getElementById('s-vehicles').textContent  = d.vehiclesLoggedToday?? '–';
+    });
+}
+
+// ── VISITORS ─────────────────────────────────────────────────────────────────
+function loadVisitors() {
+    api('/visitors').then(r => {
+        const tbody = document.getElementById('visitor-tbody');
+        tbody.innerHTML = (r.data?.visitors || []).map(v => `
+            <tr>
+                <td>${v.id}</td><td>${v.name}</td>
+                <td>${v.visitorType}</td><td>${v.phone||'–'}</td>
+                <td>${v.vehicleNo||'–'}</td><td>${badge(v.status)}</td>
+                <td>${v.arrivalTime||'–'}</td>
+                <td>
+                    ${v.status==='pending'?`<button class="act-btn act-green" onclick="setStatus(${v.id},'approved')">✓ Approve</button>
+                    <button class="act-btn act-red" onclick="setStatus(${v.id},'denied')">✗ Deny</button>`:''}
+                    <button class="act-btn act-red" onclick="delVisitor(${v.id})">🗑</button>
+                </td>
+            </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:#666">No visitors</td></tr>';
+    });
+}
+function addVisitor() {
+    api('/visitors','POST',{
+        name: document.getElementById('v-name').value,
+        visitorType: document.getElementById('v-type').value,
+        phone: document.getElementById('v-phone').value,
+        vehicleNo: document.getElementById('v-vehicle').value,
+        residentId: document.getElementById('v-resident').value||null
+    }).then(r => { if(r.success){ toast('✅ Visitor approved'); loadVisitors(); loadStats(); }});
+}
+function setStatus(id, status) {
+    api('/visitors/'+id+'/status','PUT',{status}).then(r=>{if(r.success){toast('Status: '+status);loadVisitors();loadStats();}});
+}
+function delVisitor(id) {
+    if(!confirm('Delete this visitor?')) return;
+    api('/visitors/'+id,'DELETE').then(r=>{if(r.success){toast('Deleted');loadVisitors();loadStats();}});
+}
+
+// ── STAFF ─────────────────────────────────────────────────────────────────────
+function loadStaff() {
+    api('/staff').then(r => {
+        const tbody = document.getElementById('staff-tbody');
+        tbody.innerHTML = (r.data?.staff||[]).map(s=>`
+            <tr>
+                <td>${s.id}</td><td>${s.name}</td><td>${s.type}</td>
+                <td>${s.residentId||'–'}</td><td>${s.entryTime||'–'}</td>
+                <td>${s.exitTime||'–'}</td><td>${badge(s.status)}</td>
+                <td>
+                    ${s.status==='Inside'?`<button class="act-btn act-yellow" onclick="exitStaff(${s.id})">Exit</button>`:''}
+                    <button class="act-btn act-red" onclick="delStaff(${s.id})">🗑</button>
+                </td>
+            </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:#666">No staff</td></tr>';
+    });
+}
+function addStaff() {
+    api('/staff','POST',{
+        name: document.getElementById('st-name').value,
+        type: document.getElementById('st-type').value,
+        phone: document.getElementById('st-phone').value,
+        residentId: document.getElementById('st-resident').value||null
+    }).then(r=>{if(r.success){toast('✅ Staff entry recorded');loadStaff();loadStats();}});
+}
+function exitStaff(id) {
+    api('/staff/'+id+'/exit','POST').then(r=>{if(r.success){toast('Exit recorded');loadStaff();loadStats();}});
+}
+function delStaff(id) {
+    if(!confirm('Delete staff record?')) return;
+    api('/staff/'+id,'DELETE').then(r=>{if(r.success){toast('Deleted');loadStaff();}});
+}
+
+// ── PATROL ────────────────────────────────────────────────────────────────────
+function loadPatrol() {
+    api('/patrol/checkpoints').then(r => {
+        const list = r.data?.checkpoints || [];
+        document.getElementById('cp-tbody').innerHTML = list.map(c=>
+            `<tr><td>${c.id}</td><td>${c.name}</td><td>${c.location||'–'}</td></tr>`
+        ).join('') || '<tr><td colspan="3" style="color:#666;text-align:center">No checkpoints</td></tr>';
+        const sel = document.getElementById('pl-cp');
+        sel.innerHTML = list.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    });
+    api('/patrol/logs').then(r => {
+        document.getElementById('pl-tbody').innerHTML = (r.data?.logs||[]).map(l=>
+            `<tr><td>${l.guardId}</td><td>${l.checkpoint}</td><td>${l.gpsLocation||'N/A'}</td><td>${l.timestamp||''}</td></tr>`
+        ).join('') || '<tr><td colspan="4" style="color:#666;text-align:center">No logs</td></tr>';
+    });
+}
+function addCheckpoint() {
+    api('/patrol/checkpoints','POST',{
+        name: document.getElementById('cp-name').value,
+        location: document.getElementById('cp-loc').value
+    }).then(r=>{if(r.success){toast('Checkpoint added');loadPatrol();}});
+}
+function recordPatrol() {
+    api('/patrol/log','POST',{
+        guardId: document.getElementById('pl-guard').value,
+        checkpointId: document.getElementById('pl-cp').value,
+        gpsLocation: document.getElementById('pl-gps').value||'N/A'
+    }).then(r=>{if(r.success){toast('✅ Patrol logged');loadPatrol();}});
+}
+
+// ── DEVICES ──────────────────────────────────────────────────────────────────
+function loadDevices() {
+    api('/devices').then(r => {
+        const grid = document.getElementById('device-grid');
+        grid.innerHTML = (r.data?.devices||[]).map(d=>`
+            <div class="device-card">
+                <h4>${d.name}</h4>
+                <div class="meta">📍 ${d.location||'–'} &nbsp;|&nbsp; 🔧 ${d.type}</div>
+                <div style="margin-bottom:8px">${badge(d.status)}</div>
+                <button class="${d.status==='open'?'btn-close':'btn-open'}"
+                    onclick="controlDevice(${d.id},'${d.status==='open'?'close':'open'}')">
+                    ${d.status==='open'?'🔒 Close':'🔓 Open'}
+                </button>
+                <button class="act-btn act-red" style="width:100%;margin-top:6px" onclick="delDevice(${d.id})">🗑 Remove</button>
+            </div>`).join('') || '<p style="color:#666">No devices</p>';
+    });
+}
+function addDevice() {
+    api('/devices','POST',{
+        name: document.getElementById('dv-name').value,
+        type: document.getElementById('dv-type').value,
+        location: document.getElementById('dv-loc').value
+    }).then(r=>{if(r.success){toast('Device added');loadDevices();loadStats();}});
+}
+function controlDevice(id, action) {
+    api('/devices/'+id+'/control','PUT',{action}).then(r=>{if(r.success){toast('Device '+action+'d');loadDevices();loadStats();}});
+}
+function delDevice(id) {
+    if(!confirm('Remove device?')) return;
+    api('/devices/'+id,'DELETE').then(r=>{if(r.success){toast('Removed');loadDevices();}});
+}
+
+// ── RESIDENTS ─────────────────────────────────────────────────────────────────
+function loadResidents() {
+    api('/residents').then(r => {
+        document.getElementById('res-tbody').innerHTML = (r.data?.residents||[]).map(res=>`
+            <tr>
+                <td>${res.id}</td><td>${res.name}</td>
+                <td>${res.flatNumber||'–'}</td><td>${res.phone||'–'}</td>
+                <td><button class="act-btn act-red" onclick="delResident(${res.id})">🗑</button></td>
+            </tr>`).join('') || '<tr><td colspan="5" style="color:#666;text-align:center">No residents</td></tr>';
+    });
+}
+function addResident() {
+    api('/residents','POST',{
+        name: document.getElementById('res-name').value,
+        flatNumber: document.getElementById('res-flat').value,
+        phone: document.getElementById('res-phone').value
+    }).then(r=>{if(r.success){toast('✅ Resident added');loadResidents();loadStats();}});
+}
+function delResident(id) {
+    if(!confirm('Delete resident?')) return;
+    api('/residents/'+id,'DELETE').then(r=>{if(r.success){toast('Deleted');loadResidents();loadStats();}});
+}
+
+// ── VEHICLES ──────────────────────────────────────────────────────────────────
+function loadVehicles() {
+    api('/vehicles').then(r => {
+        document.getElementById('veh-tbody').innerHTML = (r.data?.vehicles||[]).map(v=>`
+            <tr><td>${v.vehicleNumber||'–'}</td><td>${v.category||'–'}</td><td>${v.timeLogged||'–'}</td></tr>
+        `).join('') || '<tr><td colspan="3" style="color:#666;text-align:center">No vehicles logged today</td></tr>';
+    });
+}
+
+// ── init ──────────────────────────────────────────────────────────────────────
+loadStats();
+loadVisitors();  // default tab
+</script>
+</body>
+</html>

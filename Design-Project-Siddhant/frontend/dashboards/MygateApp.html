@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MyGate – Smart Society Security</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#ff6584;
+  --success:#2ecc71;--danger:#e74c3c;--warning:#f39c12;--info:#3498db;
+  --dark:#0d1117;--card:#161b22;--card2:#21262d;--card3:#30363d;
+  --text:#e6edf3;--muted:#7d8590;--border:#30363d;
+  --radius:14px;--shadow:0 8px 32px rgba(0,0,0,.5);
+  --font:'DM Sans',sans-serif;--font-head:'Space Grotesk',sans-serif;
+}
+body{font-family:var(--font);background:var(--dark);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;outline:none;font-family:var(--font)}
+input,select,textarea{outline:none;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--text);padding:11px 14px;width:100%;font-size:14px;font-family:var(--font);transition:.2s}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,99,255,.12)}
+select option{background:var(--card2)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--card3);border-radius:3px}
+.hidden{display:none!important}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
+.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
+.w-full{width:100%}.fw-600{font-weight:600}
+.text-sm{font-size:13px}.text-muted{color:var(--muted)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-success{background:rgba(46,204,113,.15);color:#2ecc71}
+.badge-warning{background:rgba(243,156,18,.15);color:#f39c12}
+.badge-danger{background:rgba(231,76,60,.15);color:#e74c3c}
+.badge-info{background:rgba(52,152,219,.15);color:#3498db}
+.badge-pending{background:rgba(243,156,18,.15);color:#f39c12}
+.badge-approved{background:rgba(46,204,113,.15);color:#2ecc71}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;font-family:var(--font);
+  transition:.2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-info{background:var(--info);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-icon{padding:8px;border-radius:8px;background:rgba(108,99,255,.1);color:var(--primary);border:none}
+.btn-icon:hover{background:var(--primary);color:#fff}
+
+/* ── Toast ───────────────────────────────────────────────── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;
+  min-width:280px;max-width:360px;display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow);animation:slideIn .3s ease;font-size:14px}
+.toast.success{border-left:4px solid var(--success)}
+.toast.error{border-left:4px solid var(--danger)}
+.toast.info{border-left:4px solid var(--info)}
+.toast.warning{border-left:4px solid var(--warning)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{transform:translateX(120%);opacity:0}}
+
+/* ── Login ───────────────────────────────────────────────── */
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0d1117 0%,#161b22 60%,#1a1f2e 100%);position:relative;overflow:hidden}
+#login-page::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 600px 500px at 20% 50%,rgba(108,99,255,.08) 0%,transparent 70%),
+             radial-gradient(ellipse 400px 300px at 80% 20%,rgba(255,101,132,.06) 0%,transparent 60%)}
+.login-wrap{display:flex;width:100%;max-width:900px;gap:0;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);z-index:1}
+.login-hero{flex:1;background:linear-gradient(135deg,#1a1040 0%,#16213e 100%);
+  padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.login-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;
+  background:radial-gradient(circle,rgba(108,99,255,.2) 0%,transparent 60%);border-radius:50%}
+.login-hero-badge{background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.3);
+  border-radius:20px;padding:6px 14px;font-size:12px;color:var(--primary);display:inline-flex;align-items:center;gap:6px;width:fit-content}
+.login-hero h1{font-family:var(--font-head);font-size:38px;font-weight:700;color:#fff;line-height:1.1;margin-top:20px}
+.login-hero h1 span{color:var(--primary)}
+.login-hero p{color:var(--muted);font-size:15px;margin-top:12px;line-height:1.6}
+.feature-list{margin-top:32px;display:flex;flex-direction:column;gap:12px}
+.feature-item{display:flex;align-items:center;gap:10px;font-size:14px;color:#c0c8d8}
+.feature-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.login-card{background:var(--card);width:380px;padding:40px;flex-shrink:0}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.login-logo .icon{width:44px;height:44px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.login-logo h2{font-family:var(--font-head);font-size:22px;font-weight:700;color:#fff}
+.login-logo p{font-size:12px;color:var(--muted)}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;font-size:13px;color:var(--muted);font-weight:500}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;border-radius:10px;font-size:15px;font-weight:600;font-family:var(--font);
+  transition:.2s;border:none;cursor:pointer;margin-top:4px}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,.3)}
+.demo-creds{background:rgba(108,99,255,.06);border:1px solid rgba(108,99,255,.15);
+  border-radius:10px;padding:14px;margin-top:18px}
+.demo-creds h4{font-size:12px;color:var(--primary);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.demo-cred{font-size:12px;color:var(--muted);margin:5px 0;cursor:pointer;transition:.2s;
+  padding:4px 8px;border-radius:6px;display:flex;align-items:center;gap:8px}
+.demo-cred:hover{background:rgba(108,99,255,.1);color:var(--text)}
+.demo-cred-role{font-weight:600;color:var(--text);min-width:65px;font-size:11px;
+  background:var(--card2);padding:2px 6px;border-radius:4px}
+
+/* ── App Shell ───────────────────────────────────────────── */
+#app{display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar{width:230px;background:var(--card);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sidebar-header{padding:18px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px}
+.sidebar-header .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sidebar-header .logo-text h2{font-family:var(--font-head);font-size:15px;font-weight:700;color:#fff}
+.sidebar-header .logo-text p{font-size:10px;color:var(--muted)}
+.sidebar-user{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.user-info .name{font-size:13px;font-weight:600;color:#fff}
+.user-info .role-badge{font-size:10px;padding:2px 7px;border-radius:8px;margin-top:2px;display:inline-block}
+.sidebar-nav{flex:1;padding:10px 0}
+.nav-section{padding:8px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;
+  transition:.15s;font-size:13px;color:var(--muted);position:relative}
+.nav-item:hover{background:rgba(108,99,255,.07);color:var(--text)}
+.nav-item.active{background:rgba(108,99,255,.14);color:var(--primary)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--primary);border-radius:0 2px 2px 0}
+.nav-item .nav-icon{width:18px;text-align:center;font-size:15px}
+.nav-item .nav-label{flex:1}
+.nav-item .nav-badge{background:var(--danger);color:#fff;border-radius:10px;
+  padding:1px 7px;font-size:10px;font-weight:700}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border)}
+
+/* ── Main ────────────────────────────────────────────────── */
+.main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:60px;background:var(--card);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 22px;flex-shrink:0}
+.topbar-title h2{font-family:var(--font-head);font-size:17px;font-weight:700;color:#fff}
+.topbar-title p{font-size:12px;color:var(--muted)}
+.page-content{flex:1;overflow-y:auto;padding:22px}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-family:var(--font-head);font-size:15px;font-weight:600;color:#fff}
+
+/* ── Stats ───────────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;
+  position:relative;overflow:hidden;transition:.2s;cursor:default}
+.stat-card:hover{border-color:var(--accent-color,var(--primary));transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-color,var(--primary))}
+.stat-value{font-family:var(--font-head);font-size:30px;font-weight:700;color:#fff;line-height:1}
+.stat-label{font-size:12px;color:var(--muted);margin-top:5px}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:36px;opacity:.12}
+
+/* ── Table ───────────────────────────────────────────────── */
+.data-table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:600}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(108,99,255,.04)}
+
+/* ── Form ────────────────────────────────────────────────── */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}
+.form-actions{margin-top:18px;display:flex;gap:10px}
+.form-label{display:block;margin-bottom:6px;font-size:12px;color:var(--muted);font-weight:500}
+
+/* ── Modal ───────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:18px;
+  padding:26px;width:100%;max-width:480px;box-shadow:var(--shadow)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-family:var(--font-head);font-size:16px;font-weight:700;color:#fff}
+.modal-close{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+
+/* ── Passcode display ─────────────────────────────────────── */
+.passcode-display{font-family:var(--font-head);font-size:24px;font-weight:700;letter-spacing:5px;
+  color:var(--primary);background:rgba(108,99,255,.1);padding:12px 20px;
+  border-radius:10px;display:inline-block;border:2px dashed rgba(108,99,255,.3)}
+
+/* ── Notification ────────────────────────────────────────── */
+.notif-popup{position:fixed;top:80px;right:24px;background:var(--card2);
+  border:1px solid var(--success);border-radius:14px;padding:16px 20px;
+  min-width:300px;z-index:1001;box-shadow:var(--shadow);animation:slideIn .3s ease}
+
+/* ── Status cards ────────────────────────────────────────── */
+.status-pending{background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.3);border-radius:10px;padding:14px}
+.status-approved{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:10px;padding:14px}
+.status-rejected{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:10px;padding:14px}
+
+/* ── Action grid ─────────────────────────────────────────── */
+.action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.action-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:22px 18px;text-align:center;cursor:pointer;transition:.2s}
+.action-card:hover{border-color:var(--primary);background:rgba(108,99,255,.07);transform:translateY(-2px)}
+.action-card .action-icon{font-size:36px;margin-bottom:10px}
+.action-card .action-label{font-weight:600;color:#fff;font-size:14px}
+.action-card .action-desc{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ── Image hero ──────────────────────────────────────────── */
+.img-hero{width:100%;height:160px;border-radius:14px;object-fit:cover;margin-bottom:16px;
+  background:linear-gradient(135deg,var(--card2),var(--card3))}
+.building-card{border-radius:14px;overflow:hidden;position:relative;height:140px;
+  background:linear-gradient(135deg,#1a1040 0%,#16213e 100%);
+  display:flex;align-items:center;justify-content:center;font-size:60px;
+  border:1px solid var(--border);margin-bottom:16px}
+.building-card::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(13,17,23,.8) 0%,transparent 60%)}
+
+/* ── Loader ──────────────────────────────────────────────── */
+.loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(108,99,255,.2);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Shift timer ─────────────────────────────────────────── */
+.shift-timer{font-family:var(--font-head);font-size:28px;font-weight:700;color:var(--success)}
+.shift-card{background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);border-radius:12px;
+  padding:16px;text-align:center;margin-bottom:16px}
+
+/* ── Leave calendar ──────────────────────────────────────── */
+.leave-item{background:var(--card2);border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+
+/* ── Attendance row ──────────────────────────────────────── */
+.att-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+.att-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+@media(max-width:700px){
+  .sidebar{width:56px}
+  .sidebar-header .logo-text,.user-info,.nav-item .nav-label,.nav-item .nav-badge,.sidebar-footer .btn-outline span{display:none}
+  .login-wrap{flex-direction:column;max-width:400px}
+  .login-hero{display:none}
+}
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- ─── LOGIN ─────────────────────────────────────────────────────────────── -->
+<div id="login-page">
+  <div class="login-wrap">
+    <div class="login-hero">
+      <div>
+        <div class="login-hero-badge">🏢 Smart Society Management</div>
+        <h1>Secure Your<br/><span>Society with</span><br/>MyGate</h1>
+        <p>Complete visitor management, staff tracking, and society security — all in one place.</p>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon" style="background:rgba(108,99,255,.2)">🔐</div>
+          Visitor pre-approval with unique passcodes
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="background:rgba(46,204,113,.15)">👮</div>
+          Real-time guard to resident notifications
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="background:rgba(255,101,132,.15)">🧹</div>
+          Maid & staff check-in/leave management
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="background:rgba(243,156,18,.15)">📊</div>
+          Live dashboard with analytics
+        </div>
+      </div>
+    </div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="icon">🏢</div>
+        <div>
+          <h2>MyGate</h2>
+          <p>Society Security Platform</p>
+        </div>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input id="login-email" type="email" placeholder="you@example.com" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input id="login-password" type="password" placeholder="••••••••" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Login As</label>
+          <select id="login-role">
+            <option value="GUARD">🛡️ Guard</option>
+            <option value="RESIDENT">🏠 Resident</option>
+            <option value="MAID">🧹 Maid</option>
+            <option value="STAFF">👷 Staff</option>
+            <option value="ADMIN">⚙️ Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="login-btn" id="login-btn">Login to MyGate →</button>
+      </form>
+      <div class="demo-creds">
+        <h4>🎯 Demo Credentials</h4>
+        <div class="demo-cred" onclick="fillCreds('guard@mygate.in','guard123','GUARD')">
+          <span class="demo-cred-role">Guard</span> guard@mygate.in / guard123
+        </div>
+        <div class="demo-cred" onclick="fillCreds('resident@mygate.in','res123','RESIDENT')">
+          <span class="demo-cred-role">Resident</span> resident@mygate.in / res123
+        </div>
+        <div class="demo-cred" onclick="fillCreds('maid@mygate.in','maid123','MAID')">
+          <span class="demo-cred-role">Maid</span> maid@mygate.in / maid123
+        </div>
+        <div class="demo-cred" onclick="fillCreds('staff@mygate.in','staff123','STAFF')">
+          <span class="demo-cred-role">Staff</span> staff@mygate.in / staff123
+        </div>
+        <div class="demo-cred" onclick="fillCreds('admin@mygate.in','admin123','ADMIN')">
+          <span class="demo-cred-role">Admin</span> admin@mygate.in / admin123
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── APP ────────────────────────────────────────────────────────────────── -->
+<div id="app" class="hidden">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">🏢</div>
+      <div class="logo-text"><h2>MyGate</h2><p>Smart Society</p></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sb-avatar">?</div>
+      <div class="user-info">
+        <div class="name" id="sb-name">User</div>
+        <div class="role-badge" id="sb-role">Role</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-outline w-full" onclick="logout()">
+        <span>🚪</span><span> Logout</span>
+      </button>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">
+        <h2 id="page-title">Dashboard</h2>
+        <p id="page-subtitle">Welcome back</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="text-sm text-muted" id="topbar-time"></span>
+        <button class="btn-icon" onclick="refreshPage()">🔄</button>
+        <button class="btn-icon" id="notif-btn" onclick="showPendingVisitors()">🔔 <span id="notif-count" class="hidden" style="background:var(--danger);color:#fff;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:700"></span></button>
+      </div>
+    </div>
+    <div class="page-content" id="page-content"></div>
+  </div>
+</div>
+
+<!-- ─── MODAL ──────────────────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Modal</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   LOCAL DATABASE  (persists via localStorage)
+══════════════════════════════════════════════════════ */
+const DB_KEY = 'mygate_db_v3';
+function loadDB() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || initDB(); }
+  catch(e) { return initDB(); }
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function initDB() {
+  const db = {
+    users: [
+      {id:'u1', email:'guard@mygate.in',   password:'guard123',   role:'GUARD',    name:'Ramesh Kumar',  apartment:null},
+      {id:'u2', email:'resident@mygate.in', password:'res123',     role:'RESIDENT', name:'Priya Sharma',  apartment:'B-101'},
+      {id:'u3', email:'maid@mygate.in',     password:'maid123',    role:'MAID',     name:'Sunita Devi',   apartment:null},
+      {id:'u4', email:'staff@mygate.in',    password:'staff123',   role:'STAFF',    name:'Mahesh Singh',  apartment:null},
+      {id:'u5', email:'admin@mygate.in',    password:'admin123',   role:'ADMIN',    name:'Admin User',    apartment:null},
+    ],
+    visitors: [],     // {id, name, apartment, phone, reason, passCode, status:'PENDING'|'APPROVED'|'REJECTED'|'ENTERED', createdAt, approvedAt, enteredAt}
+    vehicles: [],     // {id, number, category, owner, loggedAt, exitAt}
+    attendance: {},   // userId -> [{date, checkIn, checkOut, shiftHours}]
+    leaves: [],       // {id, userId, name, type, from, to, reason, status:'PENDING'|'APPROVED'|'REJECTED'}
+    complaints: [],   // {id, residentId, title, description, status, createdAt}
+    bills: {},        // apartmentId -> {maintenance, water, pending, dueDate}
+    guardShifts: {},  // userId -> {startTime, active}
+    notifications: [],// {id, targetUserId, type, message, read, createdAt}
+    staffTasks: [],   // {id, assignedTo, title, description, status, dueDate}
+  };
+  saveDB(db);
+  return db;
+}
+
+let DB = loadDB();
+
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+let STATE = { user: null, currentPage: null, pollInterval: null, shiftTimer: null };
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+function genId() { return Math.random().toString(36).substr(2,9); }
+function genPasscode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+function now() { return new Date().toISOString(); }
+function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'; }
+function fmtTime(iso) { return iso ? new Date(iso).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—'; }
+function fmtDateTime(iso) { return iso ? fmtDate(iso)+' '+fmtTime(iso) : '—'; }
+function today() { return new Date().toLocaleDateString('en-CA'); } // YYYY-MM-DD
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+function toast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const icons = {success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.animation='fadeOut .3s ease forwards'; setTimeout(()=>t.remove(),300); }, 3500);
+}
+
+/* ══════════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════════ */
+function openModal(title, html) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal(e) {
+  if (!e || e.target===document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+/* ══════════════════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════════════════ */
+function updateClock() {
+  const el = document.getElementById('topbar-time');
+  if(el) el.textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ══════════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════════ */
+function fillCreds(email, pwd, role) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = pwd;
+  document.getElementById('login-role').value = role;
+}
+
+document.getElementById('login-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('login-password').value;
+  const role  = document.getElementById('login-role').value;
+  DB = loadDB();
+  const user = DB.users.find(u => u.email === email && u.password === pass && u.role === role);
+  if (!user) { toast('Invalid credentials or wrong role selected','error'); return; }
+  STATE.user = user;
+  localStorage.setItem('mg_session', JSON.stringify({userId: user.id}));
+  showApp();
+});
+
+function logout() {
+  STATE = {user:null, currentPage:null, pollInterval:null, shiftTimer:null};
+  localStorage.removeItem('mg_session');
+  clearInterval(STATE.pollInterval);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+  toast('Logged out','info');
+}
+
+window.addEventListener('load', () => {
+  const s = localStorage.getItem('mg_session');
+  if (s) {
+    const {userId} = JSON.parse(s);
+    DB = loadDB();
+    const u = DB.users.find(x=>x.id===userId);
+    if (u) { STATE.user=u; showApp(); return; }
+  }
+});
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION CONFIG
+══════════════════════════════════════════════════════ */
+const NAV = {
+  GUARD: [
+    {id:'guard-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN'},
+    {id:'register-visitor', icon:'➕', label:'Register Visitor', section:'VISITORS'},
+    {id:'visitor-log', icon:'📋', label:'Visitor Log', section:'VISITORS'},
+    {id:'log-vehicle', icon:'🚗', label:'Log Vehicle', section:'VEHICLES'},
+    {id:'vehicle-log', icon:'📊', label:'Vehicle Log', section:'VEHICLES'},
+    {id:'guard-shift', icon:'⏱️', label:'My Shift', section:'SHIFT'},
+  ],
+  RESIDENT: [
+    {id:'resident-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN'},
+    {id:'approve-visitor', icon:'✅', label:'Approve Visitor', section:'VISITORS'},
+    {id:'my-visitors', icon:'👥', label:'My Visitors', section:'VISITORS'},
+    {id:'my-bills', icon:'💰', label:'My Bills', section:'ACCOUNT'},
+    {id:'file-complaint', icon:'📋', label:'File Complaint', section:'ACCOUNT'},
+    {id:'manage-vehicles', icon:'🚗', label:'My Vehicles', section:'ACCOUNT'},
+  ],
+  MAID: [
+    {id:'maid-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN'},
+    {id:'maid-checkin', icon:'✅', label:'Building Check-In', section:'ATTENDANCE'},
+    {id:'maid-assignments', icon:'📋', label:'My Assignments', section:'WORK'},
+    {id:'maid-leave', icon:'🗓️', label:'Apply Leave', section:'WORK'},
+    {id:'maid-attendance', icon:'📊', label:'My Attendance', section:'RECORDS'},
+    {id:'maid-profile', icon:'👤', label:'My Profile', section:'ACCOUNT'},
+  ],
+  STAFF: [
+    {id:'staff-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN'},
+    {id:'staff-checkin', icon:'✅', label:'Building Check-In', section:'ATTENDANCE'},
+    {id:'staff-tasks', icon:'📋', label:'My Tasks', section:'WORK'},
+    {id:'staff-leave', icon:'🗓️', label:'Apply Leave', section:'WORK'},
+    {id:'staff-attendance', icon:'📊', label:'My Attendance', section:'RECORDS'},
+    {id:'staff-profile', icon:'👤', label:'My Profile', section:'ACCOUNT'},
+  ],
+  ADMIN: [
+    {id:'admin-dashboard', icon:'📊', label:'Dashboard', section:'MAIN'},
+    {id:'all-visitors', icon:'👥', label:'All Visitors', section:'MANAGEMENT'},
+    {id:'all-vehicles', icon:'🚗', label:'All Vehicles', section:'MANAGEMENT'},
+    {id:'manage-staff', icon:'👷', label:'Staff & Maids', section:'MANAGEMENT'},
+    {id:'manage-leaves', icon:'🗓️', label:'Leave Requests', section:'MANAGEMENT'},
+    {id:'manage-complaints', icon:'📋', label:'Complaints', section:'MANAGEMENT'},
+    {id:'manage-residents', icon:'🏠', label:'Residents', section:'MANAGEMENT'},
+  ],
+};
+
+const PAGE_TITLES = {
+  'guard-dashboard':'Guard Dashboard','register-visitor':'Register Visitor','visitor-log':'Visitor Log',
+  'log-vehicle':'Log Vehicle','vehicle-log':'Vehicle Log','guard-shift':'My Shift',
+  'resident-dashboard':'Resident Portal','approve-visitor':'Approve Visitor','my-visitors':'My Visitors',
+  'my-bills':'My Bills','file-complaint':'File Complaint','manage-vehicles':'My Vehicles',
+  'maid-dashboard':'Maid Portal','maid-checkin':'Building Check-In','maid-assignments':'My Assignments',
+  'maid-leave':'Apply Leave','maid-attendance':'My Attendance','maid-profile':'My Profile',
+  'staff-dashboard':'Staff Portal','staff-checkin':'Building Check-In','staff-tasks':'My Tasks',
+  'staff-leave':'Apply Leave','staff-attendance':'My Attendance','staff-profile':'My Profile',
+  'admin-dashboard':'Admin Dashboard','all-visitors':'All Visitors','all-vehicles':'All Vehicles',
+  'manage-staff':'Staff & Maids','manage-leaves':'Leave Requests','manage-complaints':'Complaints',
+  'manage-residents':'Residents',
+};
+
+/* ══════════════════════════════════════════════════════
+   SHOW APP
+══════════════════════════════════════════════════════ */
+function showApp() {
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  const u = STATE.user;
+  const av = document.getElementById('sb-avatar');
+  av.textContent = u.name.charAt(0).toUpperCase();
+  document.getElementById('sb-name').textContent = u.name;
+  const rb = document.getElementById('sb-role');
+  rb.textContent = u.role;
+  const roleColors = {GUARD:'#3498db',RESIDENT:'#2ecc71',MAID:'#ff6584',STAFF:'#f39c12',ADMIN:'#6c63ff'};
+  rb.style.background = (roleColors[u.role]||'#6c63ff')+'22';
+  rb.style.color = roleColors[u.role]||'#6c63ff';
+  buildNav();
+  const defaultPage = NAV[u.role]?.[0]?.id || 'guard-dashboard';
+  navigate(defaultPage);
+  startPolling();
+}
+
+function buildNav() {
+  const items = NAV[STATE.user.role] || [];
+  let html = '';
+  let section = '';
+  items.forEach(item => {
+    if (item.section !== section) {
+      section = item.section;
+      html += `<div class="nav-section">${section}</div>`;
+    }
+    html += `<div class="nav-item" id="nav-${item.id}" onclick="navigate('${item.id}')">
+      <span class="nav-icon">${item.icon}</span>
+      <span class="nav-label">${item.label}</span>
+    </div>`;
+  });
+  document.getElementById('sidebar-nav').innerHTML = html;
+}
+
+function navigate(pageId) {
+  STATE.currentPage = pageId;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+pageId);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[pageId] || pageId;
+  document.getElementById('page-subtitle').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  renderPage(pageId);
+}
+
+function refreshPage() { if (STATE.currentPage) navigate(STATE.currentPage); }
+
+/* ══════════════════════════════════════════════════════
+   POLLING (guard sees resident approvals)
+══════════════════════════════════════════════════════ */
+function startPolling() {
+  if (STATE.pollInterval) clearInterval(STATE.pollInterval);
+  STATE.pollInterval = setInterval(checkNotifications, 4000);
+  checkNotifications();
+}
+
+function checkNotifications() {
+  DB = loadDB();
+  const role = STATE.user?.role;
+  if (role === 'GUARD') {
+    // Check for newly approved visitors (ones guard registered, now approved)
+    const approved = DB.visitors.filter(v =>
+      v.registeredBy === STATE.user.id && v.status === 'APPROVED' && !v.notifiedGuard
+    );
+    if (approved.length) {
+      approved.forEach(v => {
+        v.notifiedGuard = true;
+        showApprovalNotif(v);
+      });
+      saveDB(DB);
+    }
+    updateNotifBadge();
+  }
+  if (role === 'RESIDENT') {
+    // count pending visitors for their apartment
+    const pending = DB.visitors.filter(v => v.apartment === STATE.user.apartment && v.status === 'PENDING');
+    const badge = document.getElementById('notif-count');
+    if (pending.length > 0) {
+      badge.textContent = pending.length;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+}
+
+function updateNotifBadge() {
+  const pending = DB.visitors.filter(v => v.registeredBy === STATE.user?.id && v.status === 'PENDING');
+  const badge = document.getElementById('notif-count');
+  if (pending.length > 0) {
+    badge.textContent = pending.length;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function showApprovalNotif(v) {
+  const el = document.createElement('div');
+  el.className = 'notif-popup';
+  el.innerHTML = `
+    <div style="font-weight:700;color:var(--success);margin-bottom:6px">✅ Visitor Approved!</div>
+    <div class="text-sm"><strong>${v.name}</strong> → Apt ${v.apartment}</div>
+    <div class="text-sm text-muted mt-8">Passcode: <strong>${v.passCode}</strong></div>
+    <div class="text-sm text-muted">Resident approved entry</div>
+    <button class="btn btn-sm btn-success mt-8" onclick="this.parentElement.remove();markEntered('${v.id}')">Mark Entered</button>
+    <button class="btn btn-sm btn-outline mt-8" style="margin-left:6px" onclick="this.parentElement.remove()">Dismiss</button>`;
+  document.body.appendChild(el);
+  setTimeout(() => { if(el.parentElement) el.remove(); }, 20000);
+}
+
+function markEntered(visitorId) {
+  DB = loadDB();
+  const v = DB.visitors.find(x=>x.id===visitorId);
+  if (v && v.status === 'APPROVED') { v.status='ENTERED'; v.enteredAt=now(); saveDB(DB); toast('Visitor entry marked','success'); }
+}
+
+function showPendingVisitors() {
+  DB = loadDB();
+  const role = STATE.user?.role;
+  if (role === 'RESIDENT') navigate('approve-visitor');
+  else if (role === 'GUARD') navigate('visitor-log');
+}
+
+/* ══════════════════════════════════════════════════════
+   PAGE RENDERER
+══════════════════════════════════════════════════════ */
+function renderPage(id) {
+  const map = {
+    'guard-dashboard': renderGuardDashboard,
+    'register-visitor': renderRegisterVisitor,
+    'visitor-log': renderVisitorLog,
+    'log-vehicle': renderLogVehicle,
+    'vehicle-log': renderVehicleLog,
+    'guard-shift': renderGuardShift,
+    'resident-dashboard': renderResidentDashboard,
+    'approve-visitor': renderApproveVisitor,
+    'my-visitors': renderMyVisitors,
+    'my-bills': renderBills,
+    'file-complaint': renderFileComplaint,
+    'manage-vehicles': renderManageVehicles,
+    'maid-dashboard': renderMaidDashboard,
+    'maid-checkin': renderCheckin,
+    'maid-assignments': renderAssignments,
+    'maid-leave': renderLeave,
+    'maid-attendance': renderAttendance,
+    'maid-profile': renderProfile,
+    'staff-dashboard': renderStaffDashboard,
+    'staff-checkin': renderCheckin,
+    'staff-tasks': renderStaffTasks,
+    'staff-leave': renderLeave,
+    'staff-attendance': renderAttendance,
+    'staff-profile': renderProfile,
+    'admin-dashboard': renderAdminDashboard,
+    'all-visitors': renderAllVisitors,
+    'all-vehicles': renderAllVehicles,
+    'manage-staff': renderManageStaff,
+    'manage-leaves': renderManageLeaves,
+    'manage-complaints': renderManageComplaints,
+    'manage-residents': renderManageResidents,
+  };
+  const fn = map[id];
+  if (fn) fn();
+  else document.getElementById('page-content').innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted)">Page not found</div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   GUARD PAGES
+══════════════════════════════════════════════════════ */
+function renderGuardDashboard() {
+  DB = loadDB();
+  const todayStr = today();
+  const todayVisitors = DB.visitors.filter(v => v.createdAt.startsWith(todayStr));
+  const pendingV = DB.visitors.filter(v => v.status === 'PENDING').length;
+  const approvedV = DB.visitors.filter(v => v.createdAt.startsWith(todayStr) && v.status !== 'PENDING').length;
+  const todayVehicles = DB.vehicles.filter(v => v.loggedAt.startsWith(todayStr)).length;
+  const shift = DB.guardShifts?.[STATE.user.id];
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px">
+      <div>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card" style="--accent-color:#6c63ff">
+            <div class="stat-value">${todayVisitors.length}</div>
+            <div class="stat-label">Visitors Today</div>
+            <div class="stat-icon">👥</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#f39c12">
+            <div class="stat-value">${pendingV}</div>
+            <div class="stat-label">Awaiting Approval</div>
+            <div class="stat-icon">⏳</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#3498db">
+            <div class="stat-value">${todayVehicles}</div>
+            <div class="stat-label">Vehicles Today</div>
+            <div class="stat-icon">🚗</div>
+          </div>
+        </div>
+        <div class="action-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="action-card" onclick="navigate('register-visitor')">
+            <div class="action-icon">➕</div>
+            <div class="action-label">Register Visitor</div>
+            <div class="action-desc">Log new visitor entry</div>
+          </div>
+          <div class="action-card" onclick="navigate('log-vehicle')">
+            <div class="action-icon">🚗</div>
+            <div class="action-label">Log Vehicle</div>
+            <div class="action-desc">Record vehicle entry/exit</div>
+          </div>
+          <div class="action-card" onclick="navigate('visitor-log')">
+            <div class="action-icon">📋</div>
+            <div class="action-label">Visitor Log</div>
+            <div class="action-desc">View all visitors today</div>
+          </div>
+          <div class="action-card" onclick="navigate('guard-shift')">
+            <div class="action-icon">⏱️</div>
+            <div class="action-label">My Shift</div>
+            <div class="action-desc">${shift?.active ? '🟢 On Duty' : '⚪ Off Duty'}</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title" style="margin-bottom:14px">🏢 Building Info</div>
+          <div style="text-align:center;padding:20px;background:linear-gradient(135deg,#1a1040,#16213e);border-radius:10px;font-size:56px;margin-bottom:12px">🏢</div>
+          <div style="font-size:13px;color:var(--muted)">Sunrise Apartments</div>
+          <div style="font-weight:600;color:#fff">Gate 1 – Main Entrance</div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;font-size:13px">
+              <span class="text-muted">Total Apartments</span><span style="font-weight:600">48</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px">
+              <span class="text-muted">Residents Registered</span><span style="font-weight:600">36</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">⏳ Pending Approvals</div>
+          ${DB.visitors.filter(v=>v.status==='PENDING').slice(0,3).map(v=>`
+            <div style="background:var(--card2);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+              <div style="font-weight:600;font-size:13px">${v.name}</div>
+              <div style="font-size:12px;color:var(--muted)">Apt ${v.apartment} • ${v.reason}</div>
+              <div style="font-size:11px;color:var(--warning);margin-top:4px">⏳ Waiting for resident...</div>
+            </div>`).join('')||'<div class="text-muted text-sm">No pending approvals</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderRegisterVisitor() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div style="text-align:center;padding:20px 0 24px;background:linear-gradient(135deg,rgba(108,99,255,.1),rgba(255,101,132,.05));border-radius:10px;margin-bottom:20px">
+        <div style="font-size:48px">🚶</div>
+        <div style="font-family:var(--font-head);font-size:18px;font-weight:700;color:#fff;margin-top:8px">Visitor Registration</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">Register a visitor and generate their approval passcode</div>
+      </div>
+      <div class="form-group"><label class="form-label">Visitor Full Name *</label>
+        <input id="rv-name" placeholder="Enter visitor's full name"/></div>
+      <div class="form-group mt-8"><label class="form-label">Apartment Number *</label>
+        <input id="rv-apt" placeholder="e.g. B-101"/></div>
+      <div class="form-group mt-8"><label class="form-label">Contact Number</label>
+        <input id="rv-phone" placeholder="10-digit mobile number" maxlength="10"/></div>
+      <div class="form-group mt-8"><label class="form-label">Reason of Visit</label>
+        <select id="rv-reason">
+          <option value="Delivery">📦 Delivery</option>
+          <option value="Guest">👋 Guest / Friend</option>
+          <option value="Maintenance">🔧 Maintenance / Repair</option>
+          <option value="Cab/Taxi">🚕 Cab / Taxi Driver</option>
+          <option value="Food Delivery">🍔 Food Delivery</option>
+          <option value="Other">📌 Other</option>
+        </select></div>
+      <div id="rv-custom" class="form-group mt-8 hidden">
+        <label class="form-label">Specify Reason</label>
+        <input id="rv-reason-custom" placeholder="Enter reason"/></div>
+      <div class="form-actions mt-16">
+        <button class="btn btn-primary w-full" onclick="registerVisitor()">📝 Register & Get Passcode</button>
+      </div>
+      <div id="rv-result" class="hidden mt-16"></div>
+    </div>`;
+  document.getElementById('rv-reason').addEventListener('change', function() {
+    document.getElementById('rv-custom').classList.toggle('hidden', this.value !== 'Other');
+  });
+}
+
+function registerVisitor() {
+  const name = document.getElementById('rv-name').value.trim();
+  const apt  = document.getElementById('rv-apt').value.trim();
+  const phone = document.getElementById('rv-phone').value.trim();
+  const reasonSel = document.getElementById('rv-reason').value;
+  const reason = reasonSel === 'Other' ? document.getElementById('rv-reason-custom').value.trim() : reasonSel;
+  if (!name) { toast('Visitor name is required','error'); return; }
+  if (!apt)  { toast('Apartment number is required','error'); return; }
+  if (phone && phone.length !== 10) { toast('Contact number must be 10 digits','error'); return; }
+
+  DB = loadDB();
+  const passCode = genPasscode();
+  const visitor = {
+    id: genId(), name, apartment: apt.toUpperCase(), phone, reason,
+    passCode, status: 'PENDING',
+    createdAt: now(), registeredBy: STATE.user.id,
+    approvedAt: null, enteredAt: null, notifiedGuard: false,
+  };
+  DB.visitors.push(visitor);
+  saveDB(DB);
+
+  const el = document.getElementById('rv-result');
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <div style="background:rgba(243,156,18,.08);border:1.5px solid rgba(243,156,18,.4);border-radius:14px;padding:24px;text-align:center">
+      <div style="font-size:42px">⏳</div>
+      <div style="font-family:var(--font-head);font-weight:700;color:#fff;font-size:18px;margin-top:10px">Awaiting Resident Approval</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">${name} → Apt ${apt.toUpperCase()}</div>
+      <div style="margin-top:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">PASSCODE FOR RESIDENT</div>
+        <div class="passcode-display">${passCode}</div>
+      </div>
+      <div style="font-size:12px;color:var(--warning);margin-top:14px;padding:8px;background:rgba(243,156,18,.08);border-radius:8px">
+        ⚠️ Entry will only be allowed after resident approves this passcode.<br/>You'll receive a notification when approved.
+      </div>
+      <button class="btn btn-outline w-full mt-16" onclick="navigate('register-visitor')">Register Another Visitor</button>
+    </div>`;
+  toast('Visitor registered — awaiting resident approval','warning');
+}
+
+function renderVisitorLog() {
+  DB = loadDB();
+  const todayStr = today();
+  const visitors = DB.visitors.filter(v => v.createdAt.startsWith(todayStr));
+  const statusBadge = {
+    PENDING: '<span class="badge badge-pending">⏳ Pending</span>',
+    APPROVED: '<span class="badge badge-approved">✅ Approved</span>',
+    ENTERED: '<span class="badge badge-success">🟢 Entered</span>',
+    REJECTED: '<span class="badge badge-danger">❌ Rejected</span>',
+  };
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Today's Visitor Log</div>
+        <div class="text-sm text-muted">${visitors.length} visitor${visitors.length!==1?'s':''} today</div>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr>
+            <th>Visitor</th><th>Apartment</th><th>Reason</th><th>Passcode</th><th>Status</th><th>Time</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            ${visitors.length ? visitors.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(v=>`
+              <tr>
+                <td><div style="font-weight:600">${v.name}</div><div class="text-muted text-sm">${v.phone||'—'}</div></td>
+                <td>${v.apartment}</td>
+                <td>${v.reason}</td>
+                <td><span style="font-family:monospace;font-weight:700;font-size:13px;color:var(--primary)">${v.passCode}</span></td>
+                <td>${statusBadge[v.status]||v.status}</td>
+                <td class="text-sm text-muted">${fmtTime(v.createdAt)}</td>
+                <td>${v.status==='APPROVED'?`<button class="btn btn-sm btn-success" onclick="markEnteredFromLog('${v.id}')">Mark Entered</button>`:'—'}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">No visitors registered today</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function markEnteredFromLog(id) {
+  DB = loadDB();
+  const v = DB.visitors.find(x=>x.id===id);
+  if (v) { v.status='ENTERED'; v.enteredAt=now(); saveDB(DB); toast('Visitor marked as entered','success'); renderVisitorLog(); }
+}
+
+function renderLogVehicle() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div style="text-align:center;padding:16px 0 20px;background:linear-gradient(135deg,rgba(52,152,219,.1),rgba(108,99,255,.05));border-radius:10px;margin-bottom:20px">
+        <div style="font-size:48px">🚗</div>
+        <div style="font-family:var(--font-head);font-size:18px;font-weight:700;color:#fff;margin-top:8px">Vehicle Entry Log</div>
+      </div>
+      <div class="form-group"><label class="form-label">Vehicle Number *</label>
+        <input id="lv-num" placeholder="e.g. UP32 AB1234" style="text-transform:uppercase"/></div>
+      <div class="form-group mt-8"><label class="form-label">Vehicle Type</label>
+        <select id="lv-cat">
+          <option value="Car">🚗 Car</option>
+          <option value="Bike">🏍️ Bike / Scooter</option>
+          <option value="Auto">🛺 Auto Rickshaw</option>
+          <option value="Truck">🚚 Truck / Delivery</option>
+          <option value="Other">🚌 Other</option>
+        </select></div>
+      <div class="form-group mt-8"><label class="form-label">Owner / Driver Name</label>
+        <input id="lv-owner" placeholder="Name of driver or owner"/></div>
+      <div class="form-group mt-8"><label class="form-label">Purpose</label>
+        <select id="lv-purpose">
+          <option>Resident Vehicle</option>
+          <option>Visitor</option>
+          <option>Delivery</option>
+          <option>Service / Maintenance</option>
+          <option>Other</option>
+        </select></div>
+      <div class="form-actions mt-16">
+        <button class="btn btn-info w-full" onclick="logVehicle()">🚗 Log Entry</button>
+      </div>
+      <div id="lv-result" class="hidden mt-16"></div>
+    </div>`;
+}
+
+function logVehicle() {
+  const num = document.getElementById('lv-num').value.trim().toUpperCase();
+  if (!num) { toast('Vehicle number is required','error'); return; }
+  DB = loadDB();
+  const vehicle = {
+    id: genId(), number: num,
+    category: document.getElementById('lv-cat').value,
+    owner: document.getElementById('lv-owner').value.trim(),
+    purpose: document.getElementById('lv-purpose').value,
+    loggedAt: now(), exitAt: null, loggedBy: STATE.user.id,
+  };
+  DB.vehicles.push(vehicle);
+  saveDB(DB);
+  const el = document.getElementById('lv-result');
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <div class="status-approved" style="text-align:center">
+      <div style="font-size:32px">✅</div>
+      <div style="font-weight:700;color:#fff;margin-top:8px">${num} Logged</div>
+      <div class="text-sm text-muted mt-8">${vehicle.category} • ${fmtTime(vehicle.loggedAt)}</div>
+      <button class="btn btn-outline w-full mt-16" onclick="navigate('log-vehicle')">Log Another</button>
+    </div>`;
+  toast(`${vehicle.category} ${num} logged in`,'success');
+}
+
+function renderVehicleLog() {
+  DB = loadDB();
+  const todayStr = today();
+  const vehicles = DB.vehicles.filter(v=>v.loggedAt.startsWith(todayStr));
+  const counts = {Car:0,Bike:0,Auto:0,Truck:0,Other:0};
+  vehicles.forEach(v => { if(counts[v.category]!==undefined) counts[v.category]++; else counts.Other++; });
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:16px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Vehicle Log – Today</div>
+          <span class="badge badge-info">${vehicles.length} total</span>
+        </div>
+        <div class="data-table-wrap">
+          <table>
+            <thead><tr><th>Vehicle No.</th><th>Type</th><th>Owner</th><th>Purpose</th><th>Entry Time</th><th>Exit</th></tr></thead>
+            <tbody>
+              ${vehicles.length ? vehicles.sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt)).map(v=>`
+                <tr>
+                  <td><strong>${v.number}</strong></td>
+                  <td>${v.category}</td>
+                  <td>${v.owner||'—'}</td>
+                  <td>${v.purpose||'—'}</td>
+                  <td>${fmtTime(v.loggedAt)}</td>
+                  <td>${v.exitAt?fmtTime(v.exitAt):`<button class="btn btn-sm btn-outline" onclick="logVehicleExit('${v.id}')">Log Exit</button>`}</td>
+                </tr>`).join('')
+              : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No vehicles today</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Today's Breakdown</div>
+        ${Object.entries(counts).filter(([,c])=>c>0).map(([cat,c])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <span>${cat==='Car'?'🚗':cat==='Bike'?'🏍️':cat==='Auto'?'🛺':cat==='Truck'?'🚚':'🚌'} ${cat}</span>
+            <span style="font-weight:700;color:#fff">${c}</span>
+          </div>`).join('')||'<div class="text-muted text-sm">No vehicles today</div>'}
+      </div>
+    </div>`;
+}
+
+function logVehicleExit(id) {
+  DB = loadDB();
+  const v = DB.vehicles.find(x=>x.id===id);
+  if (v) { v.exitAt=now(); saveDB(DB); toast('Exit logged','success'); renderVehicleLog(); }
+}
+
+function renderGuardShift() {
+  DB = loadDB();
+  const shift = DB.guardShifts?.[STATE.user.id];
+  const isActive = shift?.active;
+  const startTime = shift?.startTime;
+  let elapsed = '';
+  if (isActive && startTime) {
+    const mins = Math.floor((Date.now() - new Date(startTime).getTime()) / 60000);
+    elapsed = `${Math.floor(mins/60)}h ${mins%60}m`;
+  }
+  // Attendance history
+  if (!DB.attendance[STATE.user.id]) DB.attendance[STATE.user.id] = [];
+  const history = DB.attendance[STATE.user.id].slice(-7).reverse();
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="card" style="margin-bottom:16px;text-align:center">
+          <div style="font-size:52px;margin-bottom:12px">${isActive?'🟢':'⚪'}</div>
+          <div style="font-family:var(--font-head);font-size:20px;font-weight:700;color:#fff">${isActive?'On Duty':'Off Duty'}</div>
+          ${isActive?`<div style="font-size:28px;font-weight:700;color:var(--success);margin:12px 0" id="shift-timer">${elapsed}</div>
+            <div class="text-sm text-muted">Shift started at ${fmtTime(startTime)}</div>`:''}
+          <div style="margin-top:20px">
+            ${isActive
+              ? `<button class="btn btn-danger w-full" onclick="guardCheckOut()">🔴 End Shift (Check Out)</button>`
+              : `<button class="btn btn-success w-full" onclick="guardCheckIn()">🟢 Start Shift (Check In)</button>`
+            }
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">📅 Recent Attendance</div>
+        ${history.length ? history.map(h=>`
+          <div class="leave-item">
+            <div>
+              <div style="font-weight:600;font-size:13px">${fmtDate(h.date)}</div>
+              <div class="text-sm text-muted">${fmtTime(h.checkIn)} – ${h.checkOut?fmtTime(h.checkOut):'Active'}</div>
+            </div>
+            <span class="badge badge-${h.checkOut?'success':'warning'}">${h.shiftHours||'–'}</span>
+          </div>`).join('')
+        : '<div class="text-muted text-sm">No attendance records yet</div>'}
+      </div>
+    </div>`;
+
+  // Live timer update
+  if (isActive) {
+    clearInterval(STATE.shiftTimer);
+    STATE.shiftTimer = setInterval(() => {
+      const el = document.getElementById('shift-timer');
+      if (!el) { clearInterval(STATE.shiftTimer); return; }
+      const mins = Math.floor((Date.now() - new Date(startTime).getTime())/60000);
+      el.textContent = `${Math.floor(mins/60)}h ${mins%60}m`;
+    }, 30000);
+  }
+}
+
+function guardCheckIn() {
+  DB = loadDB();
+  if (!DB.guardShifts) DB.guardShifts = {};
+  DB.guardShifts[STATE.user.id] = {active:true, startTime:now()};
+  if (!DB.attendance[STATE.user.id]) DB.attendance[STATE.user.id] = [];
+  DB.attendance[STATE.user.id].push({date:now(), checkIn:now(), checkOut:null, shiftHours:null});
+  saveDB(DB);
+  toast('✅ Shift started – Good luck!','success');
+  navigate('guard-shift');
+}
+
+function guardCheckOut() {
+  DB = loadDB();
+  const shift = DB.guardShifts?.[STATE.user.id];
+  if (shift?.active) {
+    const start = new Date(shift.startTime);
+    const mins = Math.floor((Date.now()-start.getTime())/60000);
+    const hours = `${Math.floor(mins/60)}h ${mins%60}m`;
+    DB.guardShifts[STATE.user.id] = {active:false, startTime:null};
+    const att = DB.attendance[STATE.user.id];
+    if (att?.length) { att[att.length-1].checkOut=now(); att[att.length-1].shiftHours=hours; }
+    saveDB(DB);
+    toast(`✅ Shift ended. Duration: ${hours}`,'success');
+    navigate('guard-shift');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   RESIDENT PAGES
+══════════════════════════════════════════════════════ */
+function renderResidentDashboard() {
+  DB = loadDB();
+  const u = STATE.user;
+  const myVisitors = DB.visitors.filter(v => v.apartment === u.apartment);
+  const pending = myVisitors.filter(v => v.status === 'PENDING').length;
+  const todayStr = today();
+  const todayV = myVisitors.filter(v => v.createdAt.startsWith(todayStr)).length;
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px">
+      <div>
+        <div style="background:linear-gradient(135deg,#1a1040,#16213e);border-radius:14px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-20px;top:-20px;font-size:100px;opacity:.1">🏠</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.6)">YOUR APARTMENT</div>
+          <div style="font-family:var(--font-head);font-size:32px;font-weight:700;color:#fff;margin:4px 0">${u.apartment||'—'}</div>
+          <div style="font-size:14px;color:rgba(255,255,255,.7)">Sunrise Apartments, Block B</div>
+          <div style="margin-top:16px;display:flex;gap:20px">
+            <div><div style="font-size:20px;font-weight:700;color:#fff">${todayV}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Visitors Today</div></div>
+            <div><div style="font-size:20px;font-weight:700;color:var(--warning)">${pending}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Pending Approval</div></div>
+          </div>
+        </div>
+        <div class="action-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="action-card" onclick="navigate('approve-visitor')" ${pending>0?'style="border-color:var(--warning)"':''}>
+            <div class="action-icon">✅</div>
+            <div class="action-label">Approve Visitor${pending>0?` <span style="background:var(--warning);color:#000;border-radius:10px;padding:1px 8px;font-size:11px">${pending}</span>`:''}</div>
+            <div class="action-desc">Enter passcode to approve</div>
+          </div>
+          <div class="action-card" onclick="navigate('my-visitors')">
+            <div class="action-icon">👥</div>
+            <div class="action-label">My Visitors</div>
+            <div class="action-desc">View visitor history</div>
+          </div>
+          <div class="action-card" onclick="navigate('my-bills')">
+            <div class="action-icon">💰</div>
+            <div class="action-label">My Bills</div>
+            <div class="action-desc">Society dues & payments</div>
+          </div>
+          <div class="action-card" onclick="navigate('file-complaint')">
+            <div class="action-icon">📋</div>
+            <div class="action-label">File Complaint</div>
+            <div class="action-desc">Raise a maintenance issue</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        ${pending > 0 ? `
+        <div class="card" style="border-color:rgba(243,156,18,.4);background:rgba(243,156,18,.05);margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <span style="font-size:20px">⚠️</span>
+            <div class="card-title">Visitors Waiting!</div>
+          </div>
+          ${DB.visitors.filter(v=>v.apartment===u.apartment&&v.status==='PENDING').map(v=>`
+            <div style="background:var(--card2);border-radius:8px;padding:10px;margin-bottom:8px">
+              <div style="font-weight:600;font-size:13px">${v.name}</div>
+              <div class="text-sm text-muted">${v.reason} • ${fmtTime(v.createdAt)}</div>
+              <button class="btn btn-sm btn-success mt-8 w-full" onclick="quickApproveVisitor('${v.passCode}')">✅ Approve</button>
+            </div>`).join('')}
+        </div>` : ''}
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">🔔 Recent Activity</div>
+          ${myVisitors.slice(-5).reverse().map(v=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div style="font-size:13px;font-weight:600">${v.name}</div>
+                <div style="font-size:11px;color:var(--muted)">${v.reason}</div>
+              </div>
+              <span class="badge badge-${v.status==='PENDING'?'pending':v.status==='APPROVED'||v.status==='ENTERED'?'success':'danger'}">${v.status}</span>
+            </div>`).join('')||'<div class="text-muted text-sm">No visitors yet</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderApproveVisitor() {
+  DB = loadDB();
+  const u = STATE.user;
+  const pendingForMe = DB.visitors.filter(v => v.apartment === u.apartment && v.status === 'PENDING');
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="max-width:600px;margin:0 auto">
+      ${pendingForMe.length > 0 ? `
+      <div class="card" style="margin-bottom:20px;border-color:rgba(243,156,18,.3)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span style="font-size:24px">⚠️</span>
+          <div class="card-title">${pendingForMe.length} Visitor${pendingForMe.length>1?'s':''} Awaiting Your Approval</div>
+        </div>
+        ${pendingForMe.map(v=>`
+          <div style="background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.2);border-radius:10px;padding:14px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div>
+                <div style="font-weight:700;font-size:15px">${v.name}</div>
+                <div class="text-sm text-muted">${v.reason} • ${fmtTime(v.createdAt)}</div>
+                <div style="font-size:11px;color:var(--muted)">Passcode: <strong style="font-family:monospace;color:var(--primary)">${v.passCode}</strong></div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm btn-success" onclick="quickApproveVisitor('${v.passCode}')">✅ Approve</button>
+                <button class="btn btn-sm btn-danger" onclick="rejectVisitor('${v.id}')">❌ Reject</button>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>` : ''}
+      
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px">Enter Passcode Manually</div>
+        <div class="text-sm text-muted" style="margin-bottom:16px">If guard shared the passcode with you separately</div>
+        <div class="form-group">
+          <label class="form-label">Visitor Passcode *</label>
+          <input id="apv-code" placeholder="8-character passcode" 
+            style="font-size:20px;text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:700"/>
+        </div>
+        <div class="form-actions mt-16">
+          <button class="btn btn-success w-full" onclick="approveVisitorByCode()">✅ Approve Visitor</button>
+        </div>
+        <div id="apv-result" class="hidden mt-16"></div>
+      </div>
+    </div>`;
+}
+
+function quickApproveVisitor(passCode) {
+  document.getElementById('apv-code') && (document.getElementById('apv-code').value = passCode);
+  approveVisitorByCode(passCode);
+}
+
+function approveVisitorByCode(passCodeOverride) {
+  const code = passCodeOverride || (document.getElementById('apv-code')?.value.trim());
+  if (!code) { toast('Enter a passcode','error'); return; }
+  DB = loadDB();
+  const v = DB.visitors.find(x => x.passCode === code.toUpperCase());
+  const el = document.getElementById('apv-result');
+  if (!v) {
+    if (el) { el.classList.remove('hidden'); el.innerHTML = `<div class="status-rejected" style="text-align:center"><div style="font-size:32px">❌</div><div style="font-weight:700;color:var(--danger)">Invalid Passcode</div></div>`; }
+    toast('Passcode not found','error'); return;
+  }
+  if (v.apartment !== STATE.user.apartment) {
+    toast('This visitor is not for your apartment','error'); return;
+  }
+  if (v.status === 'APPROVED' || v.status === 'ENTERED') {
+    toast('This visitor is already approved','warning'); return;
+  }
+  if (v.status === 'REJECTED') {
+    toast('This visitor was previously rejected','error'); return;
+  }
+  v.status = 'APPROVED'; v.approvedAt = now();
+  saveDB(DB);
+  if (el) {
+    el.classList.remove('hidden');
+    el.innerHTML = `
+      <div class="status-approved" style="text-align:center">
+        <div style="font-size:42px">✅</div>
+        <div style="font-family:var(--font-head);font-weight:700;color:var(--success);font-size:18px;margin-top:8px">Visitor Approved!</div>
+        <div style="font-size:14px;color:#fff;margin-top:6px"><strong>${v.name}</strong> may now enter</div>
+        <div class="text-sm text-muted mt-8">${v.reason}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">Guard has been notified</div>
+      </div>`;
+  }
+  toast(`✅ ${v.name} approved — guard notified`,'success');
+  // Re-render to remove from pending list
+  setTimeout(() => renderApproveVisitor(), 1500);
+}
+
+function rejectVisitor(id) {
+  DB = loadDB();
+  const v = DB.visitors.find(x=>x.id===id);
+  if (v) { v.status='REJECTED'; saveDB(DB); toast('Visitor rejected','warning'); renderApproveVisitor(); }
+}
+
+function renderMyVisitors() {
+  DB = loadDB();
+  const visitors = DB.visitors.filter(v => v.apartment === STATE.user.apartment)
+    .sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  const statusBadge = {
+    PENDING:'<span class="badge badge-pending">⏳ Pending</span>',
+    APPROVED:'<span class="badge badge-approved">✅ Approved</span>',
+    ENTERED:'<span class="badge badge-success">🟢 Entered</span>',
+    REJECTED:'<span class="badge badge-danger">❌ Rejected</span>',
+  };
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">My Visitor History</div>
+        <span class="badge badge-info">${visitors.length} total</span>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Visitor</th><th>Reason</th><th>Passcode</th><th>Status</th><th>Date & Time</th></tr></thead>
+          <tbody>
+            ${visitors.length ? visitors.map(v=>`
+              <tr>
+                <td><div style="font-weight:600">${v.name}</div><div class="text-muted text-sm">${v.phone||'—'}</div></td>
+                <td>${v.reason}</td>
+                <td><span style="font-family:monospace;color:var(--primary);font-weight:700">${v.passCode}</span></td>
+                <td>${statusBadge[v.status]||v.status}</td>
+                <td class="text-sm text-muted">${fmtDateTime(v.createdAt)}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted)">No visitors yet</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderBills() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:520px;margin:0 auto">
+      <div style="text-align:center;padding:28px 0;background:linear-gradient(135deg,rgba(243,156,18,.1),rgba(231,76,60,.05));border-radius:10px;margin-bottom:20px">
+        <div style="font-size:48px">💰</div>
+        <div style="font-size:36px;font-weight:700;font-family:var(--font-head);color:var(--warning);margin-top:8px">₹5,000</div>
+        <div class="text-muted text-sm mt-8">Total Pending Amount</div>
+        <div style="font-size:12px;color:var(--danger);margin-top:6px">Due: 10 May 2026</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:24px">🏠</div>
+          <div class="text-sm text-muted mt-8">Maintenance</div>
+          <div style="font-weight:700;color:#fff">₹3,500</div>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:24px">💧</div>
+          <div class="text-sm text-muted mt-8">Water Charges</div>
+          <div style="font-weight:700;color:#fff">₹1,000</div>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:24px">⚡</div>
+          <div class="text-sm text-muted mt-8">Common Electricity</div>
+          <div style="font-weight:700;color:#fff">₹300</div>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:24px">🌳</div>
+          <div class="text-sm text-muted mt-8">Garden Fund</div>
+          <div style="font-weight:700;color:#fff">₹200</div>
+        </div>
+      </div>
+      <button class="btn btn-warning w-full" onclick="toast('Payment gateway coming soon – contact admin','info')">💳 Pay Now (UPI / Card)</button>
+    </div>`;
+}
+
+function renderFileComplaint() {
+  DB = loadDB();
+  const myComplaints = DB.complaints.filter(c=>c.residentId===STATE.user.id).reverse();
+  document.getElementById('page-content').innerHTML = `
+    <div style="max-width:600px;margin:0 auto">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title" style="margin-bottom:16px">📋 File a Complaint</div>
+        <div class="form-group"><label class="form-label">Category *</label>
+          <select id="comp-cat">
+            <option>Plumbing / Water Leak</option><option>Electrical Issue</option>
+            <option>Elevator Problem</option><option>Parking Issue</option>
+            <option>Noise Complaint</option><option>Common Area Cleanliness</option>
+            <option>Security Concern</option><option>Other</option>
+          </select></div>
+        <div class="form-group mt-8"><label class="form-label">Description *</label>
+          <textarea id="comp-desc" rows="4" placeholder="Describe the issue in detail..."></textarea></div>
+        <div class="form-actions mt-16">
+          <button class="btn btn-primary" onclick="submitComplaint()">📤 Submit Complaint</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">My Complaints</div>
+        ${myComplaints.length ? myComplaints.map(c=>`
+          <div class="leave-item">
+            <div>
+              <div style="font-weight:600;font-size:13px">${c.title}</div>
+              <div class="text-sm text-muted">${fmtDate(c.createdAt)}</div>
+            </div>
+            <span class="badge badge-${c.status==='OPEN'?'warning':c.status==='RESOLVED'?'success':'info'}">${c.status}</span>
+          </div>`).join('')
+        : '<div class="text-muted text-sm">No complaints filed yet</div>'}
+      </div>
+    </div>`;
+}
+
+function submitComplaint() {
+  const title = document.getElementById('comp-cat').value;
+  const desc  = document.getElementById('comp-desc').value.trim();
+  if (!desc) { toast('Please describe the issue','error'); return; }
+  DB = loadDB();
+  DB.complaints.push({id:genId(), residentId:STATE.user.id, apartment:STATE.user.apartment,
+    title, description:desc, status:'OPEN', createdAt:now()});
+  saveDB(DB);
+  toast('Complaint submitted successfully','success');
+  renderFileComplaint();
+}
+
+function renderManageVehicles() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div class="card-title" style="margin-bottom:16px">🚗 My Registered Vehicles</div>
+      <div style="background:var(--card2);border-radius:10px;padding:16px;margin-bottom:16px;text-align:center;color:var(--muted)">
+        Vehicle registration is managed by the admin. Contact admin to add or remove vehicles.
+      </div>
+      <button class="btn btn-primary" onclick="toast('Request sent to admin','success')">📨 Request Vehicle Addition</button>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   MAID / STAFF SHARED PAGES
+══════════════════════════════════════════════════════ */
+function renderCheckin() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  if (!DB.attendance[uid]) DB.attendance[uid] = [];
+  const todayAtt = DB.attendance[uid].find(a => a.date.startsWith(today()));
+  const role = STATE.user.role;
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="max-width:500px;margin:0 auto">
+      <div class="card" style="margin-bottom:16px;text-align:center">
+        <div style="font-size:64px;margin-bottom:12px">${role==='MAID'?'🧹':'👷'}</div>
+        <div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:#fff">${STATE.user.name}</div>
+        <div class="text-muted text-sm mt-8">${role} · Sunrise Apartments</div>
+        <div style="margin:20px 0;padding:16px;background:var(--card2);border-radius:10px">
+          <div class="text-sm text-muted">Today – ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</div>
+          ${todayAtt
+            ? `<div style="color:var(--success);font-weight:600;margin-top:8px">✅ Checked In at ${fmtTime(todayAtt.date)}</div>
+               ${todayAtt.checkOut ? `<div style="color:var(--muted);font-size:13px;margin-top:4px">Checked Out at ${fmtTime(todayAtt.checkOut)}</div>` : ''}`
+            : `<div style="color:var(--muted);margin-top:8px">Not checked in yet</div>`
+          }
+        </div>
+        ${!todayAtt ? `<button class="btn btn-success w-full" onclick="doCheckIn()">✅ Check In to Building</button>` : ''}
+        ${todayAtt && !todayAtt.checkOut ? `<button class="btn btn-danger w-full" onclick="doCheckOut()">🔴 Check Out of Building</button>` : ''}
+        ${todayAtt && todayAtt.checkOut ? `<div style="padding:12px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:10px;color:var(--success)">✅ Shift completed for today</div>` : ''}
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">📅 This Week's Attendance</div>
+        ${(DB.attendance[uid]||[]).slice(-7).reverse().map(a=>`
+          <div class="leave-item">
+            <div>
+              <div style="font-weight:600;font-size:13px">${fmtDate(a.date)}</div>
+              <div class="text-sm text-muted">${fmtTime(a.date)} – ${a.checkOut?fmtTime(a.checkOut):'Active'}</div>
+            </div>
+            <span class="badge badge-${a.checkOut?'success':'warning'}">${a.shiftHours||'Active'}</span>
+          </div>`).join('')||'<div class="text-muted text-sm">No records yet</div>'}
+      </div>
+    </div>`;
+}
+
+function doCheckIn() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  if (!DB.attendance[uid]) DB.attendance[uid] = [];
+  const exists = DB.attendance[uid].find(a => a.date.startsWith(today()));
+  if (!exists) {
+    DB.attendance[uid].push({date:now(), checkIn:now(), checkOut:null, shiftHours:null});
+    saveDB(DB);
+    toast('✅ Checked in successfully!','success');
+    renderCheckin();
+  } else toast('Already checked in today','warning');
+}
+
+function doCheckOut() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  const att = (DB.attendance[uid]||[]).find(a => a.date.startsWith(today()));
+  if (att && !att.checkOut) {
+    const mins = Math.floor((Date.now()-new Date(att.date).getTime())/60000);
+    att.checkOut = now();
+    att.shiftHours = `${Math.floor(mins/60)}h ${mins%60}m`;
+    saveDB(DB);
+    toast(`Checked out. Duration: ${att.shiftHours}`,'success');
+    renderCheckin();
+  }
+}
+
+function renderAttendance() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  const records = (DB.attendance[uid]||[]).reverse();
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 My Attendance History</div>
+        <span class="badge badge-info">${records.length} days</span>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Duration</th><th>Status</th></tr></thead>
+          <tbody>
+            ${records.length ? records.map(r=>`
+              <tr>
+                <td>${fmtDate(r.date)}</td>
+                <td>${fmtTime(r.checkIn||r.date)}</td>
+                <td>${r.checkOut?fmtTime(r.checkOut):'—'}</td>
+                <td>${r.shiftHours||'—'}</td>
+                <td><span class="badge badge-${r.checkOut?'success':'warning'}">${r.checkOut?'Complete':'Active'}</span></td>
+              </tr>`).join('')
+            : '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted)">No attendance records</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderLeave() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  const myLeaves = DB.leaves.filter(l => l.userId === uid).reverse();
+  document.getElementById('page-content').innerHTML = `
+    <div style="max-width:600px;margin:0 auto">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title" style="margin-bottom:16px">🗓️ Apply for Leave</div>
+        <div class="form-group"><label class="form-label">Leave Type *</label>
+          <select id="lv-type">
+            <option>Sick Leave</option><option>Personal Leave</option>
+            <option>Family Emergency</option><option>Festival Holiday</option><option>Other</option>
+          </select></div>
+        <div class="form-grid mt-8">
+          <div class="form-group"><label class="form-label">From Date *</label>
+            <input id="lv-from" type="date"/></div>
+          <div class="form-group"><label class="form-label">To Date *</label>
+            <input id="lv-to" type="date"/></div>
+        </div>
+        <div class="form-group mt-8"><label class="form-label">Reason</label>
+          <textarea id="lv-reason" rows="3" placeholder="Briefly explain..."></textarea></div>
+        <div class="form-actions mt-16">
+          <button class="btn btn-primary" onclick="submitLeave()">📤 Submit Leave Request</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">My Leave Requests</div>
+        ${myLeaves.length ? myLeaves.map(l=>`
+          <div class="leave-item">
+            <div>
+              <div style="font-weight:600;font-size:13px">${l.type}</div>
+              <div class="text-sm text-muted">${l.from} to ${l.to}</div>
+              <div class="text-sm text-muted">${l.reason||'—'}</div>
+            </div>
+            <span class="badge badge-${l.status==='PENDING'?'pending':l.status==='APPROVED'?'success':'danger'}">${l.status}</span>
+          </div>`).join('')
+        : '<div class="text-muted text-sm">No leave requests</div>'}
+      </div>
+    </div>`;
+  // set today as min date
+  const t = today();
+  document.getElementById('lv-from').min = t;
+  document.getElementById('lv-to').min = t;
+}
+
+function submitLeave() {
+  const from = document.getElementById('lv-from').value;
+  const to   = document.getElementById('lv-to').value;
+  if (!from || !to) { toast('Please select dates','error'); return; }
+  if (to < from) { toast('End date must be after start date','error'); return; }
+  DB = loadDB();
+  DB.leaves.push({
+    id:genId(), userId:STATE.user.id, name:STATE.user.name,
+    type:document.getElementById('lv-type').value,
+    from, to, reason:document.getElementById('lv-reason').value,
+    status:'PENDING', appliedAt:now(),
+  });
+  saveDB(DB);
+  toast('Leave request submitted','success');
+  renderLeave();
+}
+
+function renderAssignments() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">📋 My Assignments</div>
+      <div style="display:grid;gap:12px">
+        ${['A-101','A-202','B-101'].map(apt=>`
+          <div style="background:var(--card2);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-weight:600">Apt ${apt}</div>
+              <div class="text-sm text-muted">Daily cleaning • Mon-Sat • 8:00 AM</div>
+            </div>
+            <span class="badge badge-success">Active</span>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:16px;padding:12px;background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:10px">
+        <div class="text-sm" style="color:var(--info)">ℹ️ Contact society management to update or change assignments.</div>
+      </div>
+    </div>`;
+}
+
+function renderProfile() {
+  const u = STATE.user;
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:480px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));
+          display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;margin:0 auto">
+          ${u.name.charAt(0)}
+        </div>
+        <div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:#fff;margin-top:12px">${u.name}</div>
+        <div class="text-muted text-sm">${u.email}</div>
+      </div>
+      <div style="display:grid;gap:10px">
+        <div style="background:var(--card2);border-radius:10px;padding:14px;display:flex;justify-content:space-between">
+          <span class="text-muted">Role</span><span style="font-weight:600">${u.role}</span>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:14px;display:flex;justify-content:space-between">
+          <span class="text-muted">Society</span><span style="font-weight:600">Sunrise Apartments</span>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:14px;display:flex;justify-content:space-between">
+          <span class="text-muted">Status</span><span class="badge badge-success">Active</span>
+        </div>
+      </div>
+      <button class="btn btn-danger w-full mt-16" onclick="logout()">🚪 Logout</button>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   MAID DASHBOARD
+══════════════════════════════════════════════════════ */
+function renderMaidDashboard() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  const todayAtt = (DB.attendance[uid]||[]).find(a=>a.date.startsWith(today()));
+  const myLeaves = DB.leaves.filter(l=>l.userId===uid&&l.status==='PENDING').length;
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px">
+      <div>
+        <div style="background:linear-gradient(135deg,#1a0828,#2d1045);border-radius:14px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;font-size:90px;opacity:.1">🧹</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.6)">MAID PORTAL</div>
+          <div style="font-family:var(--font-head);font-size:26px;font-weight:700;color:#fff;margin:6px 0">Hello, ${STATE.user.name.split(' ')[0]}! 👋</div>
+          <div style="margin-top:12px">
+            <span style="background:${todayAtt?'rgba(46,204,113,.2)':'rgba(231,76,60,.2)'};color:${todayAtt?'#2ecc71':'#e74c3c'};
+              padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600">
+              ${todayAtt?'🟢 Checked In Today':'⚪ Not Checked In'}
+            </span>
+          </div>
+        </div>
+        <div class="action-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="action-card" onclick="navigate('maid-checkin')">
+            <div class="action-icon">✅</div>
+            <div class="action-label">${todayAtt&&!todayAtt.checkOut?'Check Out':'Check In'}</div>
+            <div class="action-desc">Building ${todayAtt&&!todayAtt.checkOut?'exit':'entry'} log</div>
+          </div>
+          <div class="action-card" onclick="navigate('maid-assignments')">
+            <div class="action-icon">🏠</div>
+            <div class="action-label">Assignments</div>
+            <div class="action-desc">View your apartments</div>
+          </div>
+          <div class="action-card" onclick="navigate('maid-leave')">
+            <div class="action-icon">🗓️</div>
+            <div class="action-label">Apply Leave</div>
+            <div class="action-desc">${myLeaves>0?`${myLeaves} pending request`:'Request day off'}</div>
+          </div>
+          <div class="action-card" onclick="navigate('maid-attendance')">
+            <div class="action-icon">📊</div>
+            <div class="action-label">Attendance</div>
+            <div class="action-desc">View history & records</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title" style="margin-bottom:14px">📅 This Month</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:rgba(46,204,113,.08);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--success)">${(DB.attendance[uid]||[]).length}</div>
+              <div class="text-sm text-muted">Days Present</div>
+            </div>
+            <div style="background:rgba(231,76,60,.08);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--danger)">${DB.leaves.filter(l=>l.userId===uid&&l.status==='APPROVED').length}</div>
+              <div class="text-sm text-muted">Leaves Taken</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">🏠 Today's Duties</div>
+          ${['A-101 – 8:00 AM','A-202 – 9:30 AM','B-101 – 11:00 AM'].map(d=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:16px">🏠</span>
+              <span style="font-size:13px">${d}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   STAFF DASHBOARD & TASKS
+══════════════════════════════════════════════════════ */
+function renderStaffDashboard() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  const todayAtt = (DB.attendance[uid]||[]).find(a=>a.date.startsWith(today()));
+  const myTasks = DB.staffTasks.filter(t=>t.assignedTo===uid&&t.status!=='DONE').length;
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px">
+      <div>
+        <div style="background:linear-gradient(135deg,#081828,#102040);border-radius:14px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;font-size:90px;opacity:.1">👷</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.6)">STAFF PORTAL</div>
+          <div style="font-family:var(--font-head);font-size:26px;font-weight:700;color:#fff;margin:6px 0">Hello, ${STATE.user.name.split(' ')[0]}! 👋</div>
+          <div style="margin-top:12px">
+            <span style="background:${todayAtt?'rgba(46,204,113,.2)':'rgba(231,76,60,.2)'};color:${todayAtt?'#2ecc71':'#e74c3c'};
+              padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600">
+              ${todayAtt?'🟢 Checked In':'⚪ Not Checked In'}
+            </span>
+          </div>
+        </div>
+        <div class="action-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="action-card" onclick="navigate('staff-checkin')">
+            <div class="action-icon">✅</div>
+            <div class="action-label">${todayAtt&&!todayAtt.checkOut?'Check Out':'Check In'}</div>
+            <div class="action-desc">Mark your attendance</div>
+          </div>
+          <div class="action-card" onclick="navigate('staff-tasks')">
+            <div class="action-icon">📋</div>
+            <div class="action-label">My Tasks</div>
+            <div class="action-desc">${myTasks>0?`${myTasks} pending`:'View all tasks'}</div>
+          </div>
+          <div class="action-card" onclick="navigate('staff-leave')">
+            <div class="action-icon">🗓️</div>
+            <div class="action-label">Apply Leave</div>
+            <div class="action-desc">Request day off</div>
+          </div>
+          <div class="action-card" onclick="navigate('staff-attendance')">
+            <div class="action-icon">📊</div>
+            <div class="action-label">Attendance</div>
+            <div class="action-desc">View your records</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">📋 Pending Tasks</div>
+        ${DB.staffTasks.filter(t=>t.assignedTo===uid&&t.status!=='DONE').slice(0,4).map(t=>`
+          <div class="leave-item">
+            <div>
+              <div style="font-weight:600;font-size:13px">${t.title}</div>
+              <div class="text-sm text-muted">${t.description||''}</div>
+            </div>
+            <button class="btn btn-sm btn-success" onclick="markTaskDone('${t.id}')">Done</button>
+          </div>`).join('')||'<div class="text-muted text-sm">No pending tasks 🎉</div>'}
+      </div>
+    </div>`;
+}
+
+function renderStaffTasks() {
+  DB = loadDB();
+  const uid = STATE.user.id;
+  const tasks = DB.staffTasks.filter(t=>t.assignedTo===uid);
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">📋 My Tasks</div>
+      ${tasks.length ? tasks.map(t=>`
+        <div class="leave-item" style="flex-direction:column;align-items:start;gap:8px">
+          <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+            <div style="font-weight:600">${t.title}</div>
+            <span class="badge badge-${t.status==='DONE'?'success':t.status==='IN_PROGRESS'?'info':'pending'}">${t.status}</span>
+          </div>
+          ${t.description?`<div class="text-sm text-muted">${t.description}</div>`:''}
+          ${t.status!=='DONE'?`
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-sm btn-success" onclick="markTaskDone('${t.id}')">✅ Mark Done</button>
+              <button class="btn btn-sm btn-info" onclick="markTaskInProgress('${t.id}')">🔄 In Progress</button>
+            </div>`:''
+          }
+        </div>`).join('')
+      : '<div style="text-align:center;padding:32px;color:var(--muted)">No tasks assigned yet</div>'}
+    </div>`;
+}
+
+function markTaskDone(id) {
+  DB = loadDB();
+  const t = DB.staffTasks.find(x=>x.id===id);
+  if (t) { t.status='DONE'; t.completedAt=now(); saveDB(DB); toast('Task marked as done ✅','success'); renderPage(STATE.currentPage); }
+}
+function markTaskInProgress(id) {
+  DB = loadDB();
+  const t = DB.staffTasks.find(x=>x.id===id);
+  if (t) { t.status='IN_PROGRESS'; saveDB(DB); renderPage(STATE.currentPage); }
+}
+
+/* ══════════════════════════════════════════════════════
+   ADMIN PAGES
+══════════════════════════════════════════════════════ */
+function renderAdminDashboard() {
+  DB = loadDB();
+  const todayStr = today();
+  const tv = DB.visitors.filter(v=>v.createdAt.startsWith(todayStr)).length;
+  const pv = DB.visitors.filter(v=>v.status==='PENDING').length;
+  const av = DB.vehicles.filter(v=>v.loggedAt.startsWith(todayStr)).length;
+  const pl = DB.leaves.filter(l=>l.status==='PENDING').length;
+  const staff = DB.users.filter(u=>u.role==='STAFF'||u.role==='MAID').length;
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+      ${[
+        ['Visitors Today',tv,'👥','#6c63ff'],
+        ['Pending Approvals',pv,'⏳','#f39c12'],
+        ['Vehicles Today',av,'🚗','#3498db'],
+        ['Leave Requests',pl,'🗓️','#ff6584'],
+        ['Staff & Maids',staff,'👷','#2ecc71'],
+      ].map(([l,v,i,c])=>`
+        <div class="stat-card" style="--accent-color:${c}">
+          <div class="stat-value">${v}</div>
+          <div class="stat-label">${l}</div>
+          <div class="stat-icon">${i}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">⏳ Recent Visitors</div>
+        ${DB.visitors.slice(-5).reverse().map(v=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600">${v.name}</div>
+              <div style="font-size:11px;color:var(--muted)">Apt ${v.apartment} • ${v.reason}</div>
+            </div>
+            <span class="badge badge-${v.status==='PENDING'?'pending':v.status==='APPROVED'||v.status==='ENTERED'?'success':'danger'}">${v.status}</span>
+          </div>`).join('')||'<div class="text-muted text-sm">No visitors</div>'}
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">🗓️ Pending Leaves</div>
+        ${DB.leaves.filter(l=>l.status==='PENDING').slice(0,5).map(l=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600">${l.name}</div>
+              <div style="font-size:11px;color:var(--muted)">${l.type} · ${l.from} to ${l.to}</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-success" onclick="adminLeaveAction('${l.id}','APPROVED')">✅</button>
+              <button class="btn btn-sm btn-danger" onclick="adminLeaveAction('${l.id}','REJECTED')">❌</button>
+            </div>
+          </div>`).join('')||'<div class="text-muted text-sm">No pending leaves</div>'}
+      </div>
+    </div>`;
+}
+
+function renderAllVisitors() {
+  DB = loadDB();
+  const visitors = DB.visitors.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  const statusBadge = {
+    PENDING:'<span class="badge badge-pending">⏳ Pending</span>',
+    APPROVED:'<span class="badge badge-approved">✅ Approved</span>',
+    ENTERED:'<span class="badge badge-success">🟢 Entered</span>',
+    REJECTED:'<span class="badge badge-danger">❌ Rejected</span>',
+  };
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">All Visitors</div>
+        <span class="badge badge-info">${visitors.length} total</span>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Visitor</th><th>Apartment</th><th>Reason</th><th>Passcode</th><th>Status</th><th>Registered</th><th>Approved</th></tr></thead>
+          <tbody>
+            ${visitors.length ? visitors.map(v=>`
+              <tr>
+                <td><div style="font-weight:600">${v.name}</div><div class="text-muted text-sm">${v.phone||'—'}</div></td>
+                <td>${v.apartment}</td>
+                <td>${v.reason}</td>
+                <td><span style="font-family:monospace;font-weight:700;color:var(--primary)">${v.passCode}</span></td>
+                <td>${statusBadge[v.status]||v.status}</td>
+                <td class="text-sm text-muted">${fmtDateTime(v.createdAt)}</td>
+                <td class="text-sm text-muted">${v.approvedAt?fmtDateTime(v.approvedAt):'—'}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">No visitors</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderAllVehicles() {
+  DB = loadDB();
+  const vehicles = DB.vehicles.sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt));
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">All Vehicle Logs</div>
+        <span class="badge badge-info">${vehicles.length} total</span>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Vehicle No.</th><th>Type</th><th>Owner</th><th>Purpose</th><th>Entry</th><th>Exit</th></tr></thead>
+          <tbody>
+            ${vehicles.length ? vehicles.map(v=>`
+              <tr>
+                <td><strong>${v.number}</strong></td>
+                <td>${v.category}</td>
+                <td>${v.owner||'—'}</td>
+                <td>${v.purpose||'—'}</td>
+                <td>${fmtDateTime(v.loggedAt)}</td>
+                <td>${v.exitAt?fmtDateTime(v.exitAt):'<span class="badge badge-warning">Inside</span>'}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No vehicles</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderManageStaff() {
+  DB = loadDB();
+  const staff = DB.users.filter(u => u.role === 'MAID' || u.role === 'STAFF');
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Staff & Maids</div>
+        <button class="btn btn-sm btn-primary" onclick="addTaskModal()">➕ Assign Task</button>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Today</th><th>Leave Status</th></tr></thead>
+          <tbody>
+            ${staff.map(u=>{
+              const todayAtt = (DB.attendance[u.id]||[]).find(a=>a.date.startsWith(today()));
+              const pendingLeave = DB.leaves.filter(l=>l.userId===u.id&&l.status==='PENDING').length;
+              return `<tr>
+                <td style="font-weight:600">${u.name}</td>
+                <td><span class="badge badge-${u.role==='MAID'?'info':'warning'}">${u.role}</span></td>
+                <td class="text-muted text-sm">${u.email}</td>
+                <td>${todayAtt?'<span class="badge badge-success">✅ Present</span>':'<span class="badge badge-danger">Absent</span>'}</td>
+                <td>${pendingLeave>0?`<span class="badge badge-pending">${pendingLeave} pending</span>`:'—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function addTaskModal() {
+  DB = loadDB();
+  const staff = DB.users.filter(u=>u.role==='STAFF'||u.role==='MAID');
+  openModal('Assign Task', `
+    <div class="form-group"><label class="form-label">Assign To *</label>
+      <select id="task-to">
+        ${staff.map(u=>`<option value="${u.id}">${u.name} (${u.role})</option>`).join('')}
+      </select></div>
+    <div class="form-group mt-8"><label class="form-label">Task Title *</label>
+      <input id="task-title" placeholder="e.g. Clean staircase B-block"/></div>
+    <div class="form-group mt-8"><label class="form-label">Description</label>
+      <textarea id="task-desc" rows="3" placeholder="Additional details..."></textarea></div>
+    <div class="form-actions mt-16">
+      <button class="btn btn-primary" onclick="submitTask()">✅ Assign Task</button>
+    </div>`);
+}
+
+function submitTask() {
+  const toId = document.getElementById('task-to').value;
+  const title = document.getElementById('task-title').value.trim();
+  if (!title) { toast('Task title required','error'); return; }
+  DB = loadDB();
+  DB.staffTasks.push({id:genId(),assignedTo:toId,title,
+    description:document.getElementById('task-desc').value,
+    status:'PENDING',createdAt:now(),completedAt:null});
+  saveDB(DB);
+  closeModal();
+  toast('Task assigned successfully','success');
+  renderManageStaff();
+}
+
+function renderManageLeaves() {
+  DB = loadDB();
+  const leaves = DB.leaves.sort((a,b)=>b.appliedAt.localeCompare(a.appliedAt));
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Leave Requests</div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            ${leaves.length ? leaves.map(l=>`
+              <tr>
+                <td style="font-weight:600">${l.name}</td>
+                <td>${l.type}</td>
+                <td>${l.from}</td>
+                <td>${l.to}</td>
+                <td class="text-sm text-muted">${l.reason||'—'}</td>
+                <td class="text-sm text-muted">${fmtDate(l.appliedAt)}</td>
+                <td><span class="badge badge-${l.status==='PENDING'?'pending':l.status==='APPROVED'?'success':'danger'}">${l.status}</span></td>
+                <td>${l.status==='PENDING'?`
+                  <button class="btn btn-sm btn-success" onclick="adminLeaveAction('${l.id}','APPROVED')">✅</button>
+                  <button class="btn btn-sm btn-danger" style="margin-left:4px" onclick="adminLeaveAction('${l.id}','REJECTED')">❌</button>
+                `:'—'}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">No leave requests</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function adminLeaveAction(id, status) {
+  DB = loadDB();
+  const l = DB.leaves.find(x=>x.id===id);
+  if (l) { l.status=status; saveDB(DB); toast(`Leave ${status.toLowerCase()}`,'success'); renderPage(STATE.currentPage); }
+}
+
+function renderManageComplaints() {
+  DB = loadDB();
+  const complaints = DB.complaints.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Society Complaints</div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Apartment</th><th>Description</th><th>Filed</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            ${complaints.length ? complaints.map(c=>`
+              <tr>
+                <td style="font-weight:600">${c.title}</td>
+                <td>${c.apartment||'—'}</td>
+                <td class="text-sm text-muted" style="max-width:200px">${c.description}</td>
+                <td class="text-sm text-muted">${fmtDate(c.createdAt)}</td>
+                <td><span class="badge badge-${c.status==='OPEN'?'warning':c.status==='RESOLVED'?'success':'info'}">${c.status}</span></td>
+                <td>${c.status!=='RESOLVED'?`<button class="btn btn-sm btn-success" onclick="resolveComplaint('${c.id}')">Resolve</button>`:'✅'}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No complaints</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function resolveComplaint(id) {
+  DB = loadDB();
+  const c = DB.complaints.find(x=>x.id===id);
+  if (c) { c.status='RESOLVED'; saveDB(DB); toast('Complaint resolved','success'); renderManageComplaints(); }
+}
+
+function renderManageResidents() {
+  DB = loadDB();
+  const residents = DB.users.filter(u=>u.role==='RESIDENT');
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Residents</div>
+        <span class="badge badge-info">${residents.length} registered</span>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Apartment</th><th>Email</th><th>Visitors (Total)</th></tr></thead>
+          <tbody>
+            ${residents.map(u=>{
+              const total = DB.visitors.filter(v=>v.apartment===u.apartment).length;
+              return `<tr>
+                <td style="font-weight:600">${u.name}</td>
+                <td><span class="badge badge-primary">${u.apartment||'—'}</span></td>
+                <td class="text-muted text-sm">${u.email}</td>
+                <td>${total}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

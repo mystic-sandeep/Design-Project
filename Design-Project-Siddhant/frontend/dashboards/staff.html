@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Staff Portal</h2>
+        <button onclick="executeAction('/staff/check-in', 'POST')">Check In</button>
+        <button onclick="executeAction('/staff/tasks', 'GET')">View Tasks</button>
+        <button onclick="executeAction('/staff/check-out', 'POST')">Check Out</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <script src="../jwt-auth.js"></script>
+    <script>
+        function executeAction(endpoint, method, body = null) {
+            authenticatedFetch(endpoint, method, body).then(data => alert(JSON.stringify(data.data)));
+        }
+    </script>
+</body>
+</html>

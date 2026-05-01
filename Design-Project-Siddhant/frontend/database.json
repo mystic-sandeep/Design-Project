@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@mygate.com",
+      "password": "$2a$10$7QJ8QYJ9lQq9FhK6G7vE.eQy5W1o8u9lKjz0gF5xWlZzZcQb6Qv1K",
+      "role": "admin",
+      "name": "Admin User",
+      "apartment": "A-001"
+    }
+  ],
+  "pending_visitors": [],
+  "staff": [],
+  "devices": [],
+  "residents": [],
+  "vehicles": [],
+  "complaints": []
+}

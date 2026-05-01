@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MyGate – Smart Society Security</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6c63ff;--primary-dark:#5a52d5;--secondary:#ff6584;
+  --success:#2ecc71;--danger:#e74c3c;--warning:#f39c12;--info:#3498db;
+  --dark:#1a1a2e;--card:#16213e;--card2:#0f3460;
+  --text:#e0e0e0;--muted:#8892b0;--border:#233554;
+  --radius:14px;--shadow:0 8px 32px rgba(0,0,0,.4);
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;outline:none}
+input,select,textarea{outline:none;background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:10px 14px;width:100%;font-size:14px;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,99,255,.15)}
+select option{background:var(--card2)}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px}
+
+/* ── Utility ─────────────────────────────────────────────── */
+.hidden{display:none!important}
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}
+.justify-between{justify-content:space-between}.justify-center{justify-content:center}
+.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-20{gap:20px}
+.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
+.w-full{width:100%}.fw-600{font-weight:600}
+.text-sm{font-size:13px}.text-muted{color:var(--muted)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-success{background:rgba(46,204,113,.15);color:#2ecc71}
+.badge-warning{background:rgba(243,156,18,.15);color:#f39c12}
+.badge-danger{background:rgba(231,76,60,.15);color:#e74c3c}
+.badge-info{background:rgba(52,152,219,.15);color:#3498db}
+.badge-primary{background:rgba(108,99,255,.15);color:var(--primary)}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-icon{padding:8px;border-radius:8px;background:rgba(108,99,255,.1);color:var(--primary)}
+.btn-icon:hover{background:var(--primary);color:#fff}
+
+/* ── Toast ───────────────────────────────────────────────── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;
+  min-width:280px;max-width:360px;display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow);animation:slideIn .3s ease}
+.toast.success{border-left:4px solid var(--success)}
+.toast.error{border-left:4px solid var(--danger)}
+.toast.info{border-left:4px solid var(--info)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{transform:translateX(120%);opacity:0}}
+
+/* ── Login Page ──────────────────────────────────────────── */
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:48px 40px;width:100%;max-width:420px;box-shadow:var(--shadow)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .icon{width:64px;height:64px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.login-logo h1{font-size:26px;font-weight:700;color:#fff}
+.login-logo p{color:var(--muted);font-size:14px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;margin-bottom:6px;font-size:13px;color:var(--muted);font-weight:500}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;border-radius:10px;font-size:16px;font-weight:600;margin-top:8px;
+  transition:.2s;border:none;cursor:pointer}
+.login-btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.demo-creds{background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);
+  border-radius:10px;padding:14px;margin-top:20px}
+.demo-creds h4{font-size:13px;color:var(--primary);margin-bottom:8px}
+.demo-cred{font-size:12px;color:var(--muted);margin:4px 0;cursor:pointer;transition:.2s;padding:2px 4px;border-radius:4px}
+.demo-cred:hover{background:rgba(108,99,255,.1);color:var(--text)}
+
+/* ── App Shell ───────────────────────────────────────────── */
+#app{display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar{width:240px;background:var(--card);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:0;overflow-y:auto;flex-shrink:0;
+  transition:width .3s}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-header .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sidebar-header .logo-text h2{font-size:16px;font-weight:700;color:#fff}
+.sidebar-header .logo-text p{font-size:11px;color:var(--muted)}
+.sidebar-user{padding:16px;border-bottom:1px solid var(--border)}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-info .name{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-info .role-badge{font-size:11px;padding:2px 8px;border-radius:10px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section{padding:8px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;
+  transition:.2s;border-radius:0;position:relative;font-size:14px;color:var(--muted)}
+.nav-item:hover{background:rgba(108,99,255,.08);color:var(--text)}
+.nav-item.active{background:rgba(108,99,255,.15);color:var(--primary)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--primary);border-radius:0 2px 2px 0}
+.nav-item .nav-icon{width:20px;text-align:center;font-size:16px}
+.nav-item .nav-label{flex:1}
+.nav-item .nav-badge{background:var(--danger);color:#fff;border-radius:10px;
+  padding:2px 7px;font-size:10px;font-weight:700}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+
+/* ── Main Content ────────────────────────────────────────── */
+.main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:64px;background:var(--card);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar-title h2{font-size:18px;font-weight:700;color:#fff}
+.topbar-title p{font-size:13px;color:var(--muted)}
+.topbar-actions{display:flex;align-items:center;gap:12px}
+.page-content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── Page ────────────────────────────────────────────────── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:16px;font-weight:600;color:#fff}
+.card-subtitle{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* ── Stats Grid ──────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;
+  position:relative;overflow:hidden;transition:.2s}
+.stat-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-color,var(--primary))}
+.stat-value{font-size:32px;font-weight:700;color:#fff;line-height:1}
+.stat-label{font-size:13px;color:var(--muted);margin-top:6px}
+.stat-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:40px;opacity:.15}
+
+/* ── Data Table ──────────────────────────────────────────── */
+.data-table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 16px;font-size:12px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:12px 16px;font-size:14px;border-bottom:1px solid rgba(255,255,255,.04)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(108,99,255,.04)}
+
+/* ── Form Card ───────────────────────────────────────────── */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.form-actions{margin-top:20px;display:flex;gap:10px}
+
+/* ── Modal ───────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:24px}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:28px;width:100%;max-width:480px;box-shadow:var(--shadow)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:18px;font-weight:700;color:#fff}
+.modal-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:18px;
+  display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+
+/* ── QR Display ──────────────────────────────────────────── */
+.qr-card{text-align:center;padding:20px}
+.qr-img{max-width:180px;margin:0 auto 12px;border-radius:12px;
+  background:#fff;padding:8px;display:block}
+.passcode-display{font-size:22px;font-weight:700;letter-spacing:4px;
+  color:var(--primary);background:rgba(108,99,255,.1);padding:10px 20px;
+  border-radius:10px;display:inline-block;margin-top:8px}
+
+/* ── Notification Popup ──────────────────────────────────── */
+.notif-popup{position:fixed;top:80px;right:24px;background:var(--card2);
+  border:1px solid var(--primary);border-radius:14px;padding:16px 20px;
+  min-width:300px;z-index:1001;box-shadow:var(--shadow);animation:slideIn .3s ease}
+.notif-popup .notif-title{font-weight:700;color:var(--primary);margin-bottom:8px}
+
+/* ── Empty State ─────────────────────────────────────────── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:14px}
+
+/* ── Loader ──────────────────────────────────────────────── */
+.loader{display:inline-block;width:20px;height:20px;border:3px solid rgba(108,99,255,.2);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Timeline ────────────────────────────────────────────── */
+.timeline{list-style:none;padding:0}
+.timeline-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.timeline-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px}
+.tl-content .tl-title{font-size:14px;font-weight:600;color:#fff}
+.tl-content .tl-meta{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .sidebar-header .logo-text,.sidebar-user .user-info,.nav-item .nav-label,.nav-section{display:none}
+  .nav-item{justify-content:center;padding:12px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── TOAST CONTAINER ─────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ─── LOGIN PAGE ──────────────────────────────────────────────────────── -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🏠</div>
+      <h1>MyGate</h1>
+      <p>Smart Society Security Management</p>
+    </div>
+    <form id="login-form">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="Enter your email" required/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password" required/>
+      </div>
+      <div class="form-group">
+        <label>Login as</label>
+        <select id="login-role">
+          <option value="resident">🏠 Resident</option>
+          <option value="guard">🛡️ Security Guard</option>
+          <option value="admin">⚙️ Admin</option>
+          <option value="staff">🔧 Staff</option>
+          <option value="maid">🧹 Maid</option>
+        </select>
+      </div>
+      <button type="submit" class="login-btn" id="login-btn">Login to MyGate</button>
+    </form>
+    <div class="demo-creds">
+      <h4>🔑 Demo Credentials (click to fill)</h4>
+      <div class="demo-cred" onclick="fillCreds('admin@mygate.com','admin123','admin')">👤 Admin → admin@mygate.com / admin123</div>
+      <div class="demo-cred" onclick="fillCreds('guard@mygate.com','guard123','guard')">🛡️ Guard → guard@mygate.com / guard123</div>
+      <div class="demo-cred" onclick="fillCreds('resident@mygate.com','resident123','resident')">🏠 Resident → resident@mygate.com / resident123</div>
+      <div class="demo-cred" onclick="fillCreds('staff@mygate.com','staff123','staff')">🔧 Staff → staff@mygate.com / staff123</div>
+      <div class="demo-cred" onclick="fillCreds('maid@mygate.com','maid123','maid')">🧹 Maid → maid@mygate.com / maid123</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ─────────────────────────────────────────────────────────── -->
+<div id="app" class="hidden">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">🏠</div>
+      <div class="logo-text"><h2>MyGate</h2><p>Society Security</p></div>
+    </div>
+    <div class="sidebar-user flex items-center gap-12">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <div class="name" id="user-name">User</div>
+        <span class="badge badge-primary role-badge" id="user-role-badge">Role</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"><!-- injected by JS --></nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-outline w-full" onclick="logout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">
+        <h2 id="page-title">Dashboard</h2>
+        <p id="page-subtitle">Welcome back</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="text-sm text-muted" id="topbar-time"></span>
+        <button class="btn btn-icon" onclick="refreshPage()">🔄</button>
+      </div>
+    </div>
+    <div class="page-content" id="page-content"><!-- pages injected here --></div>
+  </div>
+</div>
+
+<!-- ─── MODAL ────────────────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Modal</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   CONFIG & STATE
+════════════════════════════════════════════════════════════ */
+const API = ''; // same origin
+let STATE = { token: null, user: null, currentPage: null, pollInterval: null };
+
+/* ════════════════════════════════════════════════════════════
+   API HELPER
+════════════════════════════════════════════════════════════ */
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (STATE.token) opts.headers['Authorization'] = 'Bearer ' + STATE.token;
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const r = await fetch(API + path, opts);
+    return await r.json();
+  } catch (e) {
+    return { success: false, error: 'Network error: ' + e.message };
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════════ */
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.animation = 'fadeOut .3s ease forwards'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+/* ════════════════════════════════════════════════════════════
+   MODAL
+════════════════════════════════════════════════════════════ */
+function openModal(title, html) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.add('hidden');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   TIME
+════════════════════════════════════════════════════════════ */
+function updateClock() {
+  const el = document.getElementById('topbar-time');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true });
+}
+setInterval(updateClock, 1000); updateClock();
+
+/* ════════════════════════════════════════════════════════════
+   AUTH
+════════════════════════════════════════════════════════════ */
+function fillCreds(email, pwd, role) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = pwd;
+  document.getElementById('login-role').value = role;
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML = '<span class="loader"></span> Logging in...';
+  btn.disabled = true;
+
+  const res = await api('POST', '/api/auth/login', {
+    email: document.getElementById('login-email').value,
+    password: document.getElementById('login-password').value,
+    role: document.getElementById('login-role').value,
+  });
+
+  btn.textContent = 'Login to MyGate';
+  btn.disabled = false;
+
+  if (!res.success) { toast(res.error || 'Login failed', 'error'); return; }
+
+  STATE.token = res.token;
+  STATE.user = res.user;
+  localStorage.setItem('mg_token', res.token);
+  localStorage.setItem('mg_user', JSON.stringify(res.user));
+
+  showApp();
+});
+
+function logout() {
+  STATE = { token: null, user: null, currentPage: null };
+  localStorage.removeItem('mg_token');
+  localStorage.removeItem('mg_user');
+  if (STATE.pollInterval) clearInterval(STATE.pollInterval);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+  toast('Logged out successfully', 'info');
+}
+
+// Auto-login from localStorage
+window.addEventListener('load', async () => {
+  const t = localStorage.getItem('mg_token');
+  const u = localStorage.getItem('mg_user');
+  if (t && u) {
+    STATE.token = t;
+    STATE.user = JSON.parse(u);
+    // verify token
+    const res = await api('POST', '/api/auth/verify');
+    if (res.success) { showApp(); return; }
+    localStorage.removeItem('mg_token');
+    localStorage.removeItem('mg_user');
+  }
+});
+
+/* ════════════════════════════════════════════════════════════
+   NAVIGATION CONFIG
+════════════════════════════════════════════════════════════ */
+const NAV = {
+  admin: [
+    { id:'dashboard', icon:'📊', label:'Dashboard',  section:'MAIN' },
+    { id:'visitors',  icon:'👥', label:'Visitors',   section:'MANAGEMENT' },
+    { id:'residents', icon:'🏠', label:'Residents',  section:'MANAGEMENT' },
+    { id:'staff',     icon:'👷', label:'Staff',      section:'MANAGEMENT' },
+    { id:'vehicles',  icon:'🚗', label:'Vehicles',   section:'SECURITY' },
+    { id:'patrol',    icon:'🚶', label:'Patrol',     section:'SECURITY' },
+    { id:'devices',   icon:'📹', label:'Devices',    section:'SECURITY' },
+  ],
+  guard: [
+    { id:'guard-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN' },
+    { id:'register-visitor',icon:'➕', label:'Register Visitor', section:'VISITOR' },
+    { id:'log-vehicle',     icon:'🚗', label:'Log Vehicle', section:'VEHICLE' },
+  ],
+  resident: [
+    { id:'resident-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN' },
+    { id:'approve-visitor',    icon:'✅', label:'Approve Visitor', section:'VISITOR' },
+    { id:'my-bills',           icon:'💰', label:'My Bills', section:'ACCOUNT' },
+    { id:'file-complaint',     icon:'📋', label:'File Complaint', section:'ACCOUNT' },
+  ],
+  staff: [
+    { id:'staff-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN' },
+  ],
+  maid: [
+    { id:'maid-dashboard', icon:'🏠', label:'Dashboard', section:'MAIN' },
+  ],
+};
+
+/* ════════════════════════════════════════════════════════════
+   SHOW APP
+════════════════════════════════════════════════════════════ */
+function showApp() {
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+
+  // User info in sidebar
+  const u = STATE.user;
+  const init = (u.name || u.email).charAt(0).toUpperCase();
+  document.getElementById('user-avatar').textContent = init;
+  document.getElementById('user-name').textContent = u.name || u.email;
+  document.getElementById('user-role-badge').textContent = u.roleDisplay || u.role;
+
+  // Build nav
+  buildNav(u.role);
+
+  // Navigate to default page
+  const pages = NAV[u.role] || [];
+  if (pages.length) navigate(pages[0].id);
+
+  // Start polling if guard
+  if (u.role === 'guard') {
+    if (STATE.pollInterval) clearInterval(STATE.pollInterval);
+    STATE.pollInterval = setInterval(pollApprovals, 5000);
+  }
+}
+
+function buildNav(role) {
+  const nav = document.getElementById('sidebar-nav');
+  const items = NAV[role] || [];
+  let sections = [...new Set(items.map(i => i.section))];
+  let html = '';
+  sections.forEach(s => {
+    html += `<div class="nav-section">${s}</div>`;
+    items.filter(i => i.section === s).forEach(item => {
+      html += `<div class="nav-item" id="nav-${item.id}" onclick="navigate('${item.id}')">
+        <span class="nav-icon">${item.icon}</span>
+        <span class="nav-label">${item.label}</span>
+      </div>`;
+    });
+  });
+  nav.innerHTML = html;
+}
+
+function navigate(pageId) {
+  STATE.currentPage = pageId;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + pageId);
+  if (navEl) navEl.classList.add('active');
+  renderPage(pageId);
+}
+
+function refreshPage() {
+  if (STATE.currentPage) renderPage(STATE.currentPage);
+}
+
+/* ════════════════════════════════════════════════════════════
+   PAGE RENDERER
+════════════════════════════════════════════════════════════ */
+function renderPage(pageId) {
+  const content = document.getElementById('page-content');
+  content.innerHTML = '<div style="text-align:center;padding:48px"><div class="loader" style="width:40px;height:40px;border-width:4px"></div></div>';
+
+  const titles = {
+    'dashboard':'Admin Dashboard','visitors':'Visitor Management','residents':'Residents',
+    'staff':'Staff Management','vehicles':'Vehicle Logs','patrol':'Patrol Management','devices':'Device Control',
+    'guard-dashboard':'Guard Dashboard','register-visitor':'Register Visitor','log-vehicle':'Log Vehicle',
+    'resident-dashboard':'Resident Dashboard','approve-visitor':'Approve Visitor',
+    'my-bills':'My Bills','file-complaint':'File Complaint',
+    'staff-dashboard':'Staff Dashboard','maid-dashboard':'Maid Dashboard',
+  };
+  const subs = {
+    'dashboard':'Full system overview','visitors':'Manage and track all visitors',
+    'residents':'Society residents directory','staff':'Track staff check-ins',
+    'vehicles':'Vehicle entry/exit log','patrol':'Security patrol checkpoints',
+    'devices':'IoT device management','guard-dashboard':'Your shift overview',
+    'register-visitor':'Register new visitor','log-vehicle':'Log a vehicle',
+    'resident-dashboard':'Your home overview','approve-visitor':'Approve pending visitors',
+    'my-bills':'Society dues and bills','file-complaint':'Raise a complaint',
+    'staff-dashboard':'Your attendance','maid-dashboard':'Your schedule',
+  };
+  document.getElementById('page-title').textContent = titles[pageId] || pageId;
+  document.getElementById('page-subtitle').textContent = subs[pageId] || '';
+
+  switch (pageId) {
+    case 'dashboard':          return renderAdminDashboard();
+    case 'visitors':           return renderVisitors();
+    case 'residents':          return renderResidents();
+    case 'staff':              return renderStaff();
+    case 'vehicles':           return renderVehicles();
+    case 'patrol':             return renderPatrol();
+    case 'devices':            return renderDevices();
+    case 'guard-dashboard':    return renderGuardDashboard();
+    case 'register-visitor':   return renderRegisterVisitor();
+    case 'log-vehicle':        return renderLogVehicle();
+    case 'resident-dashboard': return renderResidentDashboard();
+    case 'approve-visitor':    return renderApproveVisitor();
+    case 'my-bills':           return renderBills();
+    case 'file-complaint':     return renderComplaint();
+    case 'staff-dashboard':    return renderStaffDashboard();
+    case 'maid-dashboard':     return renderMaidDashboard();
+    default: content.innerHTML = '<div class="empty-state"><div class="icon">🚧</div><p>Page not found</p></div>';
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN: DASHBOARD
+════════════════════════════════════════════════════════════ */
+async function renderAdminDashboard() {
+  const [stats, visitors, staff] = await Promise.all([
+    api('GET', '/api/v2/admin/stats'),
+    api('GET', '/api/v2/admin/visitors'),
+    api('GET', '/api/v2/admin/staff'),
+  ]);
+  const s = stats.data || {};
+  const recentVisitors = (visitors.data?.visitors || []).slice(0, 5);
+  const activeStaff = (staff.data?.staff || []).filter(s => s.status === 'active').slice(0, 4);
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card" style="--accent-color:#6c63ff">
+        <div class="stat-value">${s.guestsToday ?? 0}</div>
+        <div class="stat-label">Visitors Today</div>
+        <div class="stat-icon">👥</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#2ecc71">
+        <div class="stat-value">${s.activeStaff ?? 0}</div>
+        <div class="stat-label">Active Staff</div>
+        <div class="stat-icon">👷</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#f39c12">
+        <div class="stat-value">${s.patrolComplete ?? 100}%</div>
+        <div class="stat-label">Patrol Complete</div>
+        <div class="stat-icon">🚶</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#3498db">
+        <div class="stat-value">${s.devicesOnline ?? 0}</div>
+        <div class="stat-label">Devices Online</div>
+        <div class="stat-icon">📹</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#e74c3c">
+        <div class="stat-value">${s.totalResidents ?? 0}</div>
+        <div class="stat-label">Total Residents</div>
+        <div class="stat-icon">🏠</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Recent Visitors</div><div class="card-subtitle">Latest registrations</div></div>
+          <button class="btn btn-sm btn-primary" onclick="navigate('visitors')">View All</button>
+        </div>
+        <div class="data-table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Apt</th><th>Status</th></tr></thead>
+            <tbody>
+              ${recentVisitors.length ? recentVisitors.map(v => `
+                <tr>
+                  <td>${v.visitor_name}</td>
+                  <td>${v.apartment_number}</td>
+                  <td>${statusBadge(v.status)}</td>
+                </tr>`).join('') : '<tr><td colspan="3"><div class="empty-state"><p>No visitors today</p></div></td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Active Staff</div><div class="card-subtitle">Currently checked in</div></div>
+          <button class="btn btn-sm btn-primary" onclick="navigate('staff')">View All</button>
+        </div>
+        <div class="data-table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>
+            <tbody>
+              ${activeStaff.length ? activeStaff.map(s => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${s.role||'—'}</td>
+                  <td>${statusBadge(s.status)}</td>
+                </tr>`).join('') : '<tr><td colspan="3"><div class="empty-state"><p>No active staff</p></div></td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── Admin: Visitors ─────────────────────────────────────── */
+async function renderVisitors() {
+  const res = await api('GET', '/api/v2/admin/visitors');
+  const visitors = res.data?.visitors || [];
+  document.getElementById('page-content').innerHTML = `
+    <div class="form-card">
+      <div class="card-title mb-12">➕ Add Visitor</div>
+      <div class="form-grid" id="add-visitor-form">
+        <div class="form-group"><label>Visitor Name</label><input id="av-name" placeholder="Full name"/></div>
+        <div class="form-group"><label>Apartment</label><input id="av-apt" placeholder="e.g. B-202"/></div>
+        <div class="form-group"><label>Contact Number</label><input id="av-phone" placeholder="Phone"/></div>
+        <div class="form-group"><label>Reason</label><input id="av-reason" placeholder="Purpose of visit"/></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addVisitor()">✅ Add Visitor</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">All Visitors (${visitors.length})</div></div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Apartment</th><th>Reason</th><th>Status</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${visitors.length ? visitors.map(v => `
+              <tr>
+                <td>${v.id}</td>
+                <td><strong>${v.visitor_name}</strong></td>
+                <td>${v.apartment_number}</td>
+                <td>${v.reason_of_visit||'—'}</td>
+                <td>${statusBadge(v.status)}</td>
+                <td class="text-sm text-muted">${fmtTime(v.registered_at)}</td>
+                <td>
+                  <button class="btn btn-sm btn-success" onclick="updateVisitorStatus(${v.id},'approved')">✅</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteVisitor(${v.id})">🗑</button>
+                </td>
+              </tr>`).join('') : '<tr><td colspan="7"><div class="empty-state"><div class="icon">👥</div><p>No visitors yet</p></div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function addVisitor() {
+  const r = await api('POST','/api/v2/admin/visitors',{
+    visitorName:   document.getElementById('av-name').value,
+    apartmentNumber: document.getElementById('av-apt').value,
+    contactNumber: document.getElementById('av-phone').value,
+    reasonOfVisit: document.getElementById('av-reason').value,
+  });
+  if (r.success) { toast('Visitor added', 'success'); navigate('visitors'); }
+  else toast(r.error, 'error');
+}
+
+async function updateVisitorStatus(id, status) {
+  const r = await api('PUT',`/api/v2/admin/visitors/${id}/status`,{ status });
+  if (r.success) { toast('Status updated','success'); navigate('visitors'); }
+  else toast(r.error,'error');
+}
+
+async function deleteVisitor(id) {
+  if (!confirm('Delete this visitor?')) return;
+  const r = await api('DELETE',`/api/v2/admin/visitors/${id}`);
+  if (r.success) { toast('Deleted','success'); navigate('visitors'); }
+  else toast(r.error,'error');
+}
+
+/* ── Admin: Residents ────────────────────────────────────── */
+async function renderResidents() {
+  const res = await api('GET', '/api/v2/admin/residents');
+  const residents = res.data?.residents || [];
+  document.getElementById('page-content').innerHTML = `
+    <div class="form-card">
+      <div class="card-title">➕ Add Resident</div>
+      <div class="form-grid mt-16">
+        <div class="form-group"><label>Name</label><input id="r-name" placeholder="Full name"/></div>
+        <div class="form-group"><label>Email</label><input id="r-email" type="email" placeholder="email@example.com"/></div>
+        <div class="form-group"><label>Apartment</label><input id="r-apt" placeholder="e.g. A-101"/></div>
+        <div class="form-group"><label>Phone</label><input id="r-phone" placeholder="Phone number"/></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addResident()">➕ Add Resident</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Residents (${residents.length})</div></div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Apartment</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${residents.length ? residents.map(r => `
+              <tr>
+                <td><strong>${r.name}</strong></td>
+                <td>${r.email||'—'}</td>
+                <td>${r.apartment||'—'}</td>
+                <td>${r.phone||'—'}</td>
+                <td>${statusBadge(r.status)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteResident(${r.id})">🗑</button></td>
+              </tr>`).join('') : '<tr><td colspan="6"><div class="empty-state"><div class="icon">🏠</div><p>No residents</p></div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function addResident() {
+  const r = await api('POST','/api/v2/admin/residents',{
+    name: document.getElementById('r-name').value,
+    email: document.getElementById('r-email').value,
+    apartment: document.getElementById('r-apt').value,
+    phone: document.getElementById('r-phone').value,
+  });
+  if (r.success) { toast('Resident added','success'); navigate('residents'); }
+  else toast(r.error,'error');
+}
+async function deleteResident(id) {
+  if (!confirm('Delete this resident?')) return;
+  await api('DELETE',`/api/v2/admin/residents/${id}`);
+  toast('Deleted','success'); navigate('residents');
+}
+
+/* ── Admin: Staff ────────────────────────────────────────── */
+async function renderStaff() {
+  const res = await api('GET', '/api/v2/admin/staff');
+  const staff = res.data?.staff || [];
+  document.getElementById('page-content').innerHTML = `
+    <div class="form-card">
+      <div class="card-title">➕ Add Staff Entry</div>
+      <div class="form-grid mt-16">
+        <div class="form-group"><label>Name</label><input id="s-name" placeholder="Staff name"/></div>
+        <div class="form-group"><label>Role</label>
+          <select id="s-role"><option>Plumber</option><option>Electrician</option><option>Maid</option><option>Security</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label>Phone</label><input id="s-phone" placeholder="Phone"/></div>
+        <div class="form-group"><label>Block</label><input id="s-apt" placeholder="e.g. A-Block"/></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addStaff()">✅ Record Entry</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Staff Log (${staff.length})</div></div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Check In</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${staff.length ? staff.map(s => `
+              <tr>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.role||'—'}</td>
+                <td>${s.phone||'—'}</td>
+                <td class="text-sm">${fmtTime(s.check_in)||'—'}</td>
+                <td>${statusBadge(s.status)}</td>
+                <td>
+                  ${s.status === 'active' ? `<button class="btn btn-sm btn-warning" onclick="staffExit(${s.id})">Exit</button>` : ''}
+                  <button class="btn btn-sm btn-danger" onclick="deleteStaff(${s.id})">🗑</button>
+                </td>
+              </tr>`).join('') : '<tr><td colspan="6"><div class="empty-state"><div class="icon">👷</div><p>No staff entries</p></div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function addStaff() {
+  const r = await api('POST','/api/v2/admin/staff',{
+    name: document.getElementById('s-name').value,
+    role: document.getElementById('s-role').value,
+    phone: document.getElementById('s-phone').value,
+    apartment: document.getElementById('s-apt').value,
+  });
+  if (r.success) { toast('Staff entry recorded','success'); navigate('staff'); }
+  else toast(r.error,'error');
+}
+async function staffExit(id) {
+  await api('POST',`/api/v2/admin/staff/${id}/exit`);
+  toast('Exit recorded','success'); navigate('staff');
+}
+async function deleteStaff(id) {
+  if (!confirm('Delete staff entry?')) return;
+  await api('DELETE',`/api/v2/admin/staff/${id}`);
+  toast('Deleted','success'); navigate('staff');
+}
+
+/* ── Admin: Vehicles ─────────────────────────────────────── */
+async function renderVehicles() {
+  const res = await api('GET', '/api/v2/admin/vehicles');
+  const vehicles = res.data?.vehicles || [];
+  document.getElementById('page-content').innerHTML = `
+    <div class="card">
+      <div class="card-header"><div class="card-title">Vehicle Logs (${vehicles.length})</div></div>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Vehicle No.</th><th>Category</th><th>Owner</th><th>Logged By</th><th>Time</th></tr></thead>
+          <tbody>
+            ${vehicles.length ? vehicles.map(v => `
+              <tr>
+                <td>${v.id}</td>
+                <td><strong>${v.vehicle_number}</strong></td>
+                <td>${v.category||'—'}</td>
+                <td>${v.owner_name||'—'}</td>
+                <td class="text-muted text-sm">${v.logged_by||'Guard'}</td>
+                <td class="text-sm">${fmtTime(v.time_logged)}</td>
+              </tr>`).join('') : '<tr><td colspan="6"><div class="empty-state"><div class="icon">🚗</div><p>No vehicles logged</p></div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+/* ── Admin: Patrol ───────────────────────────────────────── */
+async function renderPatrol() {
+  const [cpRes, logRes] = await Promise.all([
+    api('GET','/api/v2/admin/patrol/checkpoints'),
+    api('GET','/api/v2/admin/patrol/logs'),
+  ]);
+  const checkpoints = cpRes.data?.checkpoints || [];
+  const logs = logRes.data?.logs || [];
+
+  document.getElementById('page-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Checkpoints</div>
+          <button class="btn btn-sm btn-primary" onclick="addCheckpointModal()">➕ Add</button>
+        </div>
+        ${checkpoints.length ? `<ul class="timeline">${checkpoints.map(c=>`
+          <li class="timeline-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <div class="tl-title">📍 ${c.name}</div>
+              <div class="tl-meta">${c.location||'—'}</div>
+            </div>
+          </li>`).join('')}</ul>` : '<div class="empty-state"><div class="icon">📍</div><p>No checkpoints</p></div>'}
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Patrol Logs</div>
+          <button class="btn btn-sm btn-success" onclick="logPatrolModal(${JSON.stringify(checkpoints).replace(/"/g,'&quot;')})">Log Patrol</button>
+        </div>
+        ${logs.length ? `<ul class="timeline">${logs.slice(0,10).map(l=>`
+          <li class="timeline-item">
+            <div class="tl-dot" style="background:var(--success)"></div>
+            <div class="tl-content">
+              <div class="tl-title">✅ ${l.checkpoint_name||'Unknown'}</div>
+              <div class="tl-meta">${l.guard_name||'Guard'} · ${fmtTime(l.logged_at)}</div>
+            </div>
+          </li>`).join('')}</ul>` : '<div class="empty-state"><div class="icon">🚶</div><p>No patrol logs</p></div>'}
+      </div>
+    </div>`;
+}
+
+function addCheckpointModal() {
+  openModal('Add Checkpoint',`
+    <div class="form-group"><label>Checkpoint Name</label><input id="cp-name" placeholder="e.g. Gate A"/></div>
+    <div class="form-group mt-8"><label>Location</label><input id="cp-loc" placeholder="Location description"/></div>
+    <div class="form-actions mt-16">
+      <button class="btn btn-primary" onclick="saveCheckpoint()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+async function saveCheckpoint() {
+  const r = await api('POST','/api/v2/admin/patrol/checkpoints',{
+    name: document.getElementById('cp-name').value,
+    location: document.getElementById('cp-loc').value,
+  });
+  if (r.success) { toast('Checkpoint added','success'); closeModal(); navigate('patrol'); }
+  else toast(r.error,'error');
+}
+
+function logPatrolModal(checkpoints) {
+  const opts = checkpoints.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  openModal('Log Patrol',`
+    <div class="form-group"><label>Checkpoint</label><select id="pl-cp">${opts}</select></div>
+    <div class="form-group mt-8"><label>Guard Name</label><input id="pl-guard" placeholder="Guard name" value="${STATE.user?.name||'Guard'}"/></div>
+    <div class="form-actions mt-16">
+      <button class="btn btn-success" onclick="savePatrolLog()">✅ Log Patrol</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+async function savePatrolLog() {
+  const r = await api('POST','/api/v2/admin/patrol/log',{
+    checkpointId: document.getElementById('pl-cp').value,
+    guardName: document.getElementById('pl-guard').value,
+  });
+  if (r.success) { toast('Patrol logged','success'); closeModal(); navigate('patrol'); }
+  else toast(r.error,'error');
+}
+
+/* ── Admin: Devices ──────────────────────────────────────── */
+async function renderDevices() {
+  const res = await api('GET', '/api/v2/admin/devices');
+  const devices = res.data?.devices || [];
+  document.getElementById('page-content').innerHTML = `
+    <div class="form-card">
+      <div class="card-title">➕ Add Device</div>
+      <div class="form-grid mt-16">
+        <div class="form-group"><label>Device Name</label><input id="d-name" placeholder="e.g. Gate Camera"/></div>
+        <div class="form-group"><label>Type</label>
+          <select id="d-type"><option>camera</option><option>sensor</option><option>light</option><option>intercom</option><option>other</option></select>
+        </div>
+        <div class="form-group"><label>Location</label><input id="d-loc" placeholder="Where is it?"/></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addDevice()">➕ Add Device</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
+      ${devices.length ? devices.map(d => `
+        <div class="card" style="position:relative">
+          <div style="font-size:36px;text-align:center;margin-bottom:12px">${deviceIcon(d.type)}</div>
+          <div style="text-align:center">
+            <div style="font-weight:700;color:#fff;font-size:15px">${d.name}</div>
+            <div class="text-sm text-muted mt-8">${d.location||'—'}</div>
+            <div style="margin:10px 0">${statusBadge(d.status)}</div>
+            <div class="flex justify-center gap-8 mt-8">
+              <button class="btn btn-sm btn-success" onclick="controlDevice(${d.id},'online')">🟢 On</button>
+              <button class="btn btn-sm btn-warning" onclick="controlDevice(${d.id},'offline')">🔴 Off</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteDevice(${d.id})">🗑</button>
+            </div>
+          </div>
+        </div>`).join('') : '<div class="empty-state"><div class="icon">📹</div><p>No devices</p></div>'}
+    </div>`;
+}
+
+function deviceIcon(type) {
+  const icons = { camera:'📹', sensor:'🔔', light:'💡', intercom:'📞', other:'🔧' };
+  return icons[type] || '🔧';
+}
+
+async function addDevice() {
+  const r = await api('POST','/api/v2/admin/devices',{
+    name: document.getElementById('d-name').value,
+    type: document.getElementById('d-type').value,
+    location: document.getElementById('d-loc').value,
+  });
+  if (r.success) { toast('Device added','success'); navigate('devices'); }
+  else toast(r.error,'error');
+}
+async function controlDevice(id, action) {
+  const r = await api('PUT',`/api/v2/admin/devices/${id}/control`,{ action });
+  if (r.success) { toast(`Device turned ${action}`,'success'); navigate('devices'); }
+  else toast(r.error,'error');
+}
+async function deleteDevice(id) {
+  if (!confirm('Delete device?')) return;
+  await api('DELETE',`/api/v2/admin/devices/${id}`);
+  toast('Deleted','success'); navigate('devices');
+}
+
+/* ════════════════════════════════════════════════════════════
+   GUARD PAGES
+════════════════════════════════════════════════════════════ */
+async function renderGuardDashboard() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card" style="--accent-color:#6c63ff">
+        <div class="stat-value">🛡️</div>
+        <div class="stat-label">On Duty</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#2ecc71">
+        <div class="stat-value" id="gd-time">${new Date().toLocaleTimeString()}</div>
+        <div class="stat-label">Current Time</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Quick Actions</div>
+        <div class="flex flex-col gap-12">
+          <button class="btn btn-primary w-full" onclick="navigate('register-visitor')">➕ Register Visitor</button>
+          <button class="btn btn-success w-full" onclick="navigate('log-vehicle')">🚗 Log Vehicle</button>
+          <button class="btn btn-outline w-full" onclick="guardCheckIn()">✅ Check In</button>
+          <button class="btn btn-outline w-full" onclick="guardCheckOut()">🏁 Check Out</button>
+        </div>
+      </div>
+      <div class="card" id="approval-panel">
+        <div class="card-title" style="margin-bottom:16px">⏳ Pending Approvals</div>
+        <div class="text-muted text-sm">Visitor approvals from residents will appear here automatically.</div>
+      </div>
+    </div>`;
+  setInterval(()=>{
+    const el = document.getElementById('gd-time');
+    if (el) el.textContent = new Date().toLocaleTimeString();
+  }, 1000);
+}
+
+async function guardCheckIn() {
+  const r = await api('POST','/api/v2/guard/check-in');
+  if (r.success) toast('✅ Checked in at '+new Date().toLocaleTimeString(),'success');
+  else toast(r.error,'error');
+}
+async function guardCheckOut() {
+  const r = await api('POST','/api/v2/guard/check-out');
+  if (r.success) toast('🏁 Checked out at '+new Date().toLocaleTimeString(),'success');
+  else toast(r.error,'error');
+}
+
+async function renderRegisterVisitor() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div class="card-title" style="margin-bottom:20px">Register Incoming Visitor</div>
+      <div class="form-group"><label>Visitor Full Name *</label><input id="rv-name" placeholder="Enter full name"/></div>
+      <div class="form-group mt-8"><label>Apartment Number *</label><input id="rv-apt" placeholder="e.g. B-202"/></div>
+      <div class="form-group mt-8"><label>Contact Number</label><input id="rv-phone" placeholder="Phone number"/></div>
+      <div class="form-group mt-8"><label>Reason of Visit</label><input id="rv-reason" placeholder="e.g. Delivery, Meeting, etc."/></div>
+      <div class="form-actions mt-16">
+        <button class="btn btn-primary" onclick="registerVisitor()">📝 Register &amp; Get Passcode</button>
+      </div>
+      <div id="rv-result" class="hidden mt-16"></div>
+    </div>`;
+}
+
+async function registerVisitor() {
+  const name = document.getElementById('rv-name').value;
+  const apt  = document.getElementById('rv-apt').value;
+  if (!name || !apt) { toast('Name and apartment are required','error'); return; }
+
+  const r = await api('POST','/api/v2/guard/register-visitor',{
+    visitorName: name,
+    apartmentNumber: apt,
+    contactNumber: document.getElementById('rv-phone').value,
+    reasonOfVisit: document.getElementById('rv-reason').value,
+  });
+
+  const resultEl = document.getElementById('rv-result');
+  if (r.success) {
+    resultEl.classList.remove('hidden');
+    resultEl.innerHTML = `
+      <div class="qr-card" style="background:var(--card2);border-radius:12px">
+        <div style="font-size:48px">✅</div>
+        <div style="font-weight:700;color:#fff;margin-top:8px">Visitor Registered!</div>
+        <div class="text-muted text-sm mt-8">${name} → Apt ${apt}</div>
+        <div class="passcode-display mt-16">${r.data?.passCode}</div>
+        <div class="text-sm text-muted mt-8">Share this passcode with the resident for approval</div>
+      </div>`;
+    toast('Visitor registered. Passcode: '+r.data?.passCode,'success');
+  } else {
+    toast(r.error,'error');
+  }
+}
+
+async function renderLogVehicle() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div class="card-title" style="margin-bottom:20px">Log Vehicle Entry</div>
+      <div class="form-group"><label>Vehicle Number *</label><input id="lv-num" placeholder="e.g. MH12AB1234" style="text-transform:uppercase"/></div>
+      <div class="form-group mt-8"><label>Vehicle Category</label>
+        <select id="lv-cat"><option>Car</option><option>Bike</option><option>Truck</option><option>Auto</option><option>Other</option></select>
+      </div>
+      <div class="form-group mt-8"><label>Owner Name</label><input id="lv-owner" placeholder="Owner/Driver name"/></div>
+      <div class="form-actions mt-16">
+        <button class="btn btn-success" onclick="logVehicle()">🚗 Log Vehicle</button>
+      </div>
+      <div id="lv-result" class="hidden mt-16"></div>
+    </div>`;
+}
+
+async function logVehicle() {
+  const num = document.getElementById('lv-num').value.toUpperCase();
+  if (!num) { toast('Vehicle number required','error'); return; }
+
+  const r = await api('POST','/api/v2/guard/log-vehicle',{
+    vehicleNumber: num,
+    category: document.getElementById('lv-cat').value,
+    ownerName: document.getElementById('lv-owner').value,
+  });
+
+  if (r.success) {
+    document.getElementById('lv-result').classList.remove('hidden');
+    document.getElementById('lv-result').innerHTML = `
+      <div style="background:rgba(46,204,113,.1);border:1px solid var(--success);border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:32px">🚗</div>
+        <div style="font-weight:700;color:#fff">${num} Logged</div>
+        <div class="text-muted text-sm mt-8">Time: ${r.data?.timeLogged||new Date().toLocaleTimeString()}</div>
+      </div>`;
+    toast(`Vehicle ${num} logged`,'success');
+    document.getElementById('lv-num').value = '';
+  } else toast(r.error,'error');
+}
+
+/* ── Guard polling ───────────────────────────────────────── */
+async function pollApprovals() {
+  const r = await api('GET','/api/v2/guard/poll-approvals');
+  if (r.success && r.data?.approvals?.length) {
+    r.data.approvals.forEach(a => showApprovalNotif(a));
+  }
+}
+function showApprovalNotif(a) {
+  const el = document.createElement('div');
+  el.className = 'notif-popup';
+  el.innerHTML = `
+    <div class="notif-title">✅ Visitor Approved!</div>
+    <div class="text-sm"><strong>${a.visitorName}</strong> for Apt ${a.apartmentNumber}</div>
+    <div class="text-sm text-muted mt-8">Passcode: <strong>${a.passCode}</strong></div>
+    <button class="btn btn-sm btn-primary mt-8" onclick="this.parentElement.remove()">Dismiss</button>`;
+  document.body.appendChild(el);
+  setTimeout(() => { if (el.parentElement) el.remove(); }, 15000);
+}
+
+/* ════════════════════════════════════════════════════════════
+   RESIDENT PAGES
+════════════════════════════════════════════════════════════ */
+async function renderResidentDashboard() {
+  const u = STATE.user;
+  document.getElementById('page-content').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card" style="--accent-color:#6c63ff">
+        <div style="font-size:32px">🏠</div>
+        <div class="stat-label">Your Apartment</div>
+        <div style="font-weight:700;color:#fff;font-size:18px">${u.apartment||'B-202'}</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#2ecc71">
+        <div style="font-size:32px">👤</div>
+        <div class="stat-label">Welcome</div>
+        <div style="font-weight:700;color:#fff;font-size:16px">${u.name||u.email}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+      <div class="card" onclick="navigate('approve-visitor')" style="cursor:pointer;text-align:center;padding:32px">
+        <div style="font-size:42px">✅</div>
+        <div style="font-weight:700;color:#fff;margin-top:10px">Approve Visitor</div>
+        <div class="text-muted text-sm mt-8">Verify visitor passcodes</div>
+      </div>
+      <div class="card" onclick="navigate('my-bills')" style="cursor:pointer;text-align:center;padding:32px">
+        <div style="font-size:42px">💰</div>
+        <div style="font-weight:700;color:#fff;margin-top:10px">My Bills</div>
+        <div class="text-muted text-sm mt-8">View society dues</div>
+      </div>
+      <div class="card" onclick="navigate('file-complaint')" style="cursor:pointer;text-align:center;padding:32px">
+        <div style="font-size:42px">📋</div>
+        <div style="font-weight:700;color:#fff;margin-top:10px">File Complaint</div>
+        <div class="text-muted text-sm mt-8">Raise an issue</div>
+      </div>
+    </div>`;
+}
+
+async function renderApproveVisitor() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div class="card-title" style="margin-bottom:20px">Approve Visitor</div>
+      <div class="text-muted text-sm" style="margin-bottom:16px">Enter the passcode given by the guard to approve a visitor.</div>
+      <div class="form-group"><label>Visitor Passcode *</label>
+        <input id="apv-code" placeholder="9-character passcode" style="font-size:18px;text-transform:uppercase;letter-spacing:3px"/>
+      </div>
+      <div class="form-actions mt-16">
+        <button class="btn btn-success" onclick="approveVisitorByCode()">✅ Approve Visitor</button>
+      </div>
+      <div id="apv-result" class="hidden mt-16"></div>
+    </div>`;
+}
+
+async function approveVisitorByCode() {
+  const code = document.getElementById('apv-code').value.trim();
+  if (!code) { toast('Enter a passcode','error'); return; }
+
+  const r = await api('POST','/api/v2/resident/approve-visitor',{ passCode: code });
+  const el = document.getElementById('apv-result');
+  if (r.success) {
+    el.classList.remove('hidden');
+    el.innerHTML = `
+      <div style="background:rgba(46,204,113,.1);border:1px solid var(--success);border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:42px">✅</div>
+        <div style="font-weight:700;color:#fff">Visitor Approved!</div>
+        <div class="text-sm text-muted mt-8"><strong>${r.data?.visitorName}</strong> can now enter</div>
+      </div>`;
+    toast('Visitor approved!','success');
+    document.getElementById('apv-code').value = '';
+  } else {
+    el.classList.remove('hidden');
+    el.innerHTML = `<div style="background:rgba(231,76,60,.1);border:1px solid var(--danger);border-radius:12px;padding:16px;text-align:center;color:var(--danger)">❌ ${r.error}</div>`;
+    toast(r.error,'error');
+  }
+}
+
+async function renderBills() {
+  const r = await api('GET','/api/v2/resident/bills');
+  const d = r.data || {};
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:500px;margin:0 auto">
+      <div class="card-title" style="margin-bottom:20px">Society Bills & Dues</div>
+      <div style="text-align:center;padding:24px">
+        <div style="font-size:48px">💰</div>
+        <div style="font-size:36px;font-weight:700;color:var(--warning);margin-top:12px">₹${d.pendingAmount||5000}</div>
+        <div class="text-muted text-sm mt-8">Pending Amount</div>
+        ${d.dueDate ? `<div class="text-sm mt-8">Due: ${d.dueDate}</div>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:22px">🏠</div>
+          <div class="text-sm text-muted mt-8">Maintenance</div>
+          <div style="font-weight:600;color:#fff">₹3,500</div>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:22px">💧</div>
+          <div class="text-sm text-muted mt-8">Water</div>
+          <div style="font-weight:600;color:#fff">₹1,500</div>
+        </div>
+      </div>
+      <button class="btn btn-primary w-full mt-16" onclick="toast('Payment gateway coming soon','info')">💳 Pay Now</button>
+    </div>`;
+}
+
+async function renderComplaint() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <div class="card-title" style="margin-bottom:20px">File a Complaint</div>
+      <div class="form-group"><label>Subject *</label>
+        <select id="c-subject">
+          <option>Noise Complaint</option><option>Water Issue</option>
+          <option>Electricity Issue</option><option>Security Issue</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group mt-8"><label>Description</label>
+        <textarea id="c-desc" placeholder="Describe the issue..." rows="4" style="resize:vertical"></textarea>
+      </div>
+      <div class="form-actions mt-16">
+        <button class="btn btn-primary" onclick="fileComplaint()">📋 Submit Complaint</button>
+      </div>
+    </div>`;
+}
+
+async function fileComplaint() {
+  const r = await api('POST','/api/v2/resident/file-complaint',{
+    subject: document.getElementById('c-subject').value,
+    description: document.getElementById('c-desc').value,
+  });
+  if (r.success) { toast('Complaint filed successfully','success'); }
+  else toast(r.error,'error');
+}
+
+/* ════════════════════════════════════════════════════════════
+   STAFF / MAID PAGES
+════════════════════════════════════════════════════════════ */
+function renderStaffDashboard() {
+  renderSimpleDashboard('Staff Dashboard', '🔧', STATE.user?.name || 'Staff Member', [
+    { label:'Check In', fn:'staffCheckIn', icon:'✅' },
+    { label:'Check Out', fn:'staffCheckOut', icon:'🏁' },
+  ]);
+}
+function renderMaidDashboard() {
+  renderSimpleDashboard('Maid Dashboard', '🧹', STATE.user?.name || 'Maid', [
+    { label:'Check In', fn:'staffCheckIn', icon:'✅' },
+    { label:'Check Out', fn:'staffCheckOut', icon:'🏁' },
+  ]);
+}
+function renderSimpleDashboard(title, icon, name, actions) {
+  document.getElementById('page-content').innerHTML = `
+    <div class="card" style="max-width:400px;margin:0 auto;text-align:center;padding:40px">
+      <div style="font-size:56px">${icon}</div>
+      <div style="font-size:22px;font-weight:700;color:#fff;margin-top:12px">${name}</div>
+      <div class="text-muted text-sm mt-8">${title}</div>
+      <div class="flex flex-col gap-12 mt-24">
+        ${actions.map(a => `<button class="btn btn-primary w-full" onclick="${a.fn}()">${a.icon} ${a.label}</button>`).join('')}
+      </div>
+    </div>`;
+}
+async function staffCheckIn() {
+  const r = await api('POST','/api/v2/guard/check-in');
+  if (r.success) toast('✅ Checked in at '+new Date().toLocaleTimeString(),'success');
+  else toast(r.error,'error');
+}
+async function staffCheckOut() {
+  const r = await api('POST','/api/v2/guard/check-out');
+  if (r.success) toast('🏁 Checked out at '+new Date().toLocaleTimeString(),'success');
+  else toast(r.error,'error');
+}
+
+/* ════════════════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════════════════ */
+function statusBadge(status) {
+  if (!status) return '<span class="badge badge-info">—</span>';
+  const map = {
+    active:'success', approved:'success', online:'success', completed:'success',
+    pending:'warning', inactive:'warning', offline:'warning',
+    rejected:'danger', deleted:'danger',
+  };
+  const cls = map[status.toLowerCase()] || 'info';
+  return `<span class="badge badge-${cls}">${status}</span>`;
+}
+
+function fmtTime(ts) {
+  if (!ts) return '—';
+  try {
+    const d = new Date(ts);
+    if (isNaN(d)) return ts;
+    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true });
+  } catch { return ts; }
+}
+</script>
+</body>
+</html>

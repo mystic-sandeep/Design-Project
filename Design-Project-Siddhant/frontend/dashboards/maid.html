@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maid Dashboard</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Maid Portal</h2>
+        <button onclick="executeAction('/maid/check-in', 'POST')">Check In</button>
+        <button onclick="executeAction('/maid/assignments', 'GET')">View Assignments</button>
+        <button onclick="executeAction('/maid/check-out', 'POST')">Check Out</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <script src="../jwt-auth.js"></script>
+    <script>
+        function executeAction(endpoint, method, body = null) {
+            authenticatedFetch(endpoint, method, body).then(data => alert(JSON.stringify(data.data)));
+        }
+    </script>
+</body>
+</html>
