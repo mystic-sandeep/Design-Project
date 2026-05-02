@@ -38,3 +38,8 @@ desktop.ini
 .env.*.local
 *.pem
 *.key
+
+# Local Database and Data files
+backend/data/
+frontend/mygate-data.json
+backend/target/

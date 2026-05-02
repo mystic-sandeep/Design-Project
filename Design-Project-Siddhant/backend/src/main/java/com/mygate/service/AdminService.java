@@ -102,6 +102,7 @@ public class AdminService {
                     m.put("role",     s.getType());
                     m.put("phone",    s.getPhone());
                     m.put("check_in", s.getEntryTime() != null ? s.getEntryTime().format(FMT) : "");
+                    m.put("check_out", s.getExitTime() != null ? s.getExitTime().format(FMT) : "");
                     m.put("status",   s.getExitTime() == null ? "active" : "exited");
                     return m;
                 }).collect(Collectors.toList());

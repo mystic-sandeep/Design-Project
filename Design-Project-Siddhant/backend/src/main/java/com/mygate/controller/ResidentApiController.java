@@ -20,6 +20,9 @@ public class ResidentApiController {
     @Autowired
     private GuestRepository guestRepository;
 
+    @Autowired
+    private com.mygate.repository.VisitorRepository visitorRepository;
+
     // Approve visitor by passcode — saves to H2 GUESTS table
     @PostMapping("/approve-visitor")
     @Permissions("approveVisitor")
@@ -51,6 +54,21 @@ public class ResidentApiController {
         guest.setStatus(GuestStatus.APPROVED);
         guest.setApprovedAt(LocalDateTime.now());
         guestRepository.save(guest);  // ✅ SAVES TO H2
+
+        List<com.mygate.entity.Visitor> visitors = visitorRepository.findAllByOrderByIdDesc();
+        for (com.mygate.entity.Visitor v : visitors) {
+            if ("pending".equalsIgnoreCase(v.getStatus()) && v.getName().equalsIgnoreCase(guest.getName())) {
+                v.setStatus("approved");
+                visitorRepository.save(v);
+                break; // We found them, stop searching
+            }
+        }
+
+        // Tell the Guard Controller to show the popup!
+        GuardApiController.pushApprovalNotification(Map.of(
+            "visitorName", guest.getName(),
+            "apartmentNumber", guest.getResidentId()
+        ));
 
         return ResponseEntity.ok(Map.of(
             "success", true,

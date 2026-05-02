@@ -25,10 +25,16 @@ public class GuardApiController {
     @Autowired private GuestRepository    guestRepository;
     @Autowired private VisitorRepository  visitorRepository;
     @Autowired private VehicleLogStore    vehicleLogStore;
+    @Autowired 
+    private com.mygate.repository.StaffRepository staffRepository;
 
     // In-memory queue for real-time approval popups
     private static final List<Map<String, Object>> approvedQueue = new CopyOnWriteArrayList<>();
 
+    // Public helper so ResidentApiController can inject approvals here
+    public static void pushApprovalNotification(Map<String, Object> approvalData) {
+        approvedQueue.add(approvalData);
+    }
     private String genPasscode() {
         String c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         StringBuilder sb = new StringBuilder();
@@ -64,6 +70,8 @@ public class GuardApiController {
         visitor.setPhone(contactNumber);
         visitor.setStatus("pending");
         visitor.setArrivalTime(LocalDateTime.now());
+        visitor.setApartmentNumber(apartmentNumber);
+        visitor.setReasonOfVisit(reasonOfVisit);
         visitorRepository.save(visitor);  // ✅ SAVES TO H2
 
         // Also save as Guest (for passcode lookup)
@@ -136,8 +144,61 @@ public class GuardApiController {
 
     @PostMapping("/mark-entry")  @Permissions("markEntry")  public ResponseEntity<?> markEntry (HttpServletRequest r) { return ok("✅ Entry marked");  }
     @PostMapping("/mark-exit")   @Permissions("markExit")   public ResponseEntity<?> markExit  (HttpServletRequest r) { return ok("✅ Exit marked");   }
-    @PostMapping("/check-in")    @Permissions("checkIn")    public ResponseEntity<?> checkIn   (HttpServletRequest r) { return ok("✅ Checked in");    }
-    @PostMapping("/check-out")   @Permissions("checkOut")   public ResponseEntity<?> checkOut  (HttpServletRequest r) { return ok("✅ Checked out");   }
+    @PostMapping("/check-in")
+    @Permissions("checkIn")
+    public ResponseEntity<?> checkIn(HttpServletRequest r) {
+        // Grab the guard's email from the JWT token we authenticated
+        String email = (String) r.getAttribute("userEmail");
+        String guardName = (email != null && !email.isEmpty()) ? email.split("@")[0] : "Security Guard";
+
+        // Create a new staff record in the database
+        com.mygate.entity.StaffMember shift = new com.mygate.entity.StaffMember();
+        shift.setName(guardName); // Will show up as "guard" or "Security Guard"
+        shift.setType("Guard");
+        shift.setEntryTime(LocalDateTime.now());
+        
+        staffRepository.save(shift); // ✅ ACTUALLY SAVES TO DB
+
+        return ok("✅ Checked in");
+    }
+
+    @PostMapping("/check-out")
+    @Permissions("checkOut")
+    public ResponseEntity<?> checkOut(HttpServletRequest r) {
+        String email = (String) r.getAttribute("userEmail");
+        String guardName = (email != null && !email.isEmpty()) ? email.split("@")[0] : "Security Guard";
+
+        // Find the guard's current open shift and close it
+        List<com.mygate.entity.StaffMember> logs = staffRepository.findAllByOrderByEntryTimeDesc();
+        for (com.mygate.entity.StaffMember log : logs) {
+            if ("Guard".equals(log.getType()) && log.getName().equals(guardName) && log.getExitTime() == null) {
+                log.setExitTime(LocalDateTime.now());
+                staffRepository.save(log); // ✅ SAVES THE CHECKOUT TIME
+                break;
+            }
+        }
+
+        return ok("✅ Checked out");
+    }
+// 🚦 Fetch pending visitors for the Guard Dashboard
+    @GetMapping("/pending-visitors")
+    @Permissions("registerVisitor")
+    public ResponseEntity<?> getPendingVisitors() {
+        List<Map<String, Object>> pending = visitorRepository.findAllByOrderByIdDesc().stream()
+            .filter(v -> "pending".equalsIgnoreCase(v.getStatus()))
+            .map(v -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("visitorName", v.getName());
+                map.put("apartmentNumber", v.getApartmentNumber() != null ? v.getApartmentNumber() : "N/A");
+                map.put("reason", v.getReasonOfVisit() != null ? v.getReasonOfVisit() : "Visitor");
+                return map;
+            }).toList();
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "data", Map.of("visitors", pending)
+        ));
+    }
 
     private ResponseEntity<?> ok(String msg) {
         return ResponseEntity.ok(Map.of("success", true, "message", msg, "data", Map.of()));
