@@ -1,14 +1,14 @@
-const BASE_URL = "http://localhost:5001";
+const BASE_URL = "http://localhost:8080";
 
 let statsData = {
   totalGuests: 0,
   approvedToday: 0,
   pending: 0,
-  verified: 0
+  verified: 0,
 };
 
 function updateStats() {
-  document.getElementById('stats').innerHTML = `
+  document.getElementById("stats").innerHTML = `
     <div class="stat-card"><div>${statsData.totalGuests}</div><div>Total</div></div>
     <div class="stat-card"><div>${statsData.approvedToday}</div><div>Approved</div></div>
     <div class="stat-card"><div>${statsData.pending}</div><div>Pending</div></div>
@@ -17,14 +17,14 @@ function updateStats() {
 
 // REGISTER
 async function registerVisitor() {
-  const visitorName = document.getElementById('visitorName').value;
-  const apartment = document.getElementById('apartment').value;
+  const visitorName = document.getElementById("visitorName").value;
+  const apartment = document.getElementById("apartment").value;
 
   try {
     const res = await fetch(`${BASE_URL}/api/v2/guard/register-visitor`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visitorName, apartmentNumber: apartment })
+      body: JSON.stringify({ visitorName, apartmentNumber: apartment }),
     });
 
     const data = await res.json();
@@ -36,7 +36,6 @@ async function registerVisitor() {
     updateStats();
 
     loadVisitors();
-
   } catch (e) {
     alert("Error");
   }
@@ -49,7 +48,7 @@ async function approveVisitor() {
   const res = await fetch(`${BASE_URL}/api/v2/resident/approve-visitor`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ passCode })
+    body: JSON.stringify({ passCode }),
   });
 
   const data = await res.json();
@@ -68,13 +67,13 @@ async function loadVisitors() {
   const res = await fetch(`${BASE_URL}/api/v2/admin/visitors`);
   const data = await res.json();
 
-  const table = document.getElementById('visitorTable');
+  const table = document.getElementById("visitorTable");
   table.innerHTML = "";
 
   data.data.visitors.forEach((v, i) => {
     table.innerHTML += `
       <tr>
-        <td>${i+1}</td>
+        <td>${i + 1}</td>
         <td>${v.visitor_name}</td>
         <td>${v.apartment_number}</td>
         <td>${v.status}</td>
