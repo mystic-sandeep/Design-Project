@@ -1,191 +1,260 @@
-import React, { useState } from 'react';
+// src/screens/dashboards/MaidDashboard.js
+import React, { useState, useEffect } from 'react';
 import {
+  StyleSheet,
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  StatusBar,
-  Alert,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Header from '../../components/Header';
+import MaidTaskCard from '../../components/maid/MaidTaskCard';
 
-export default function MaidDashboard({ navigation }) {
-  const [onDuty, setOnDuty] = useState(false);
+// Global API Fetch wrapper
+const apiFetch = async (url, options = {}) => {
+  try {
+    const response = await fetch(`https://your-api-base-url.com${url}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("API Error:", error);
+    return null;
+  }
+};
 
-  const handleExit = () => {
-    Alert.alert("Logout", "Log out of the Maid portal?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Exit", onPress: () => navigation.replace('Login'), style: "destructive" }
-    ]);
+export default function MaidDashboard({ navigation, onLogout }) {
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('home'); // 'home', 'tasks', 'alerts'
+
+  // Status hooks
+  const [checkedIn, setCheckedIn] = useState(false);
+  const [buildingAccess, setBuildingAccess] = useState(false);
+  const [shiftTime, setShiftTime] = useState('Shift not started');
+
+  // Data lists
+  const [maintenanceAlerts, setMaintenanceAlerts] = useState([]);
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    initMaidState();
+    loadMaidData();
+
+    // 30-second background auto-polling sync
+    const polling = setInterval(() => {
+      loadMaintenance();
+      loadTasks();
+    }, 30000);
+
+    return () => clearInterval(polling);
+  }, []);
+
+  const initMaidState = async () => {
+    const isChecked = await AsyncStorage.getItem('maid_checkedin');
+    const hasAccess = await AsyncStorage.getItem('maid_building_access');
+    if (isChecked === 'true') {
+      setCheckedIn(true);
+      setShiftTime('🟢 Checked In');
+    }
+    if (hasAccess === 'true') setBuildingAccess(true);
   };
 
-  const handleAttendance = (status) => {
-    setOnDuty(status === 'in');
-    Alert.alert("Success", `Attendance recorded: ${status === 'in' ? 'Started Shift' : 'Ended Shift'}`);
+  const loadMaidData = async () => {
+    setLoading(true);
+    await Promise.all([loadMaintenance(), loadTasks()]);
+    setLoading(false);
   };
+
+  const loadMaintenance = async () => {
+    const d = await apiFetch('/api/v2/maintenance');
+    setMaintenanceAlerts(d?.data?.alerts || []);
+  };
+
+  const loadTasks = async () => {
+    const d = await apiFetch('/api/v2/tasks?assignTo=maid');
+    setTasks(d?.data?.tasks || []);
+  };
+
+  const handleCheckIn = async () => {
+    setCheckedIn(true);
+    await AsyncStorage.setItem('maid_checkedin', 'true');
+    const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    setShiftTime(`🟢 Checked In — ${timeStr}`);
+    Alert.alert("Success", "Attendance logged successfully.");
+  };
+
+  const toggleBuildingAccess = async () => {
+    if (!checkedIn) {
+      Alert.alert("Access Denied", "Please complete your shift Check In first.");
+      return;
+    }
+    const nextState = !buildingAccess;
+    setBuildingAccess(nextState);
+    await AsyncStorage.setItem('maid_building_access', nextState ? 'true' : 'false');
+  };
+
+  const acceptTask = async (id) => {
+    if (!checkedIn || !buildingAccess) {
+      Alert.alert("Action Prevented", "Ensure you are Checked In and inside the Building first.");
+      return;
+    }
+    await apiFetch(`/api/v2/tasks/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'accepted' })
+    });
+    loadTasks();
+  };
+
+  const completeTask = async (id) => {
+    await apiFetch(`/api/v2/tasks/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'done' })
+    });
+    loadTasks();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#4f46e5" />
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#10182D" />
+    <View style={styles.container}>
+      <Header title="Maid Dashboard" showAvatar={true} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Maid Portal</Text>
-          <Text style={styles.headerSubtitle}>Daily Schedule & Duty</Text>
-        </View>
-        <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
-          <Text style={styles.exitButtonText}>Exit</Text>
-        </TouchableOpacity>
-      </View>
+      {/* ── MAIN CONTENT ACCORDING TO NAVIGATION TAB ── */}
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollBody}>
+        {activeTab === 'home' && (
+          <>
+            {/* Attendance & Gate Access */}
+            <View style={styles.attendanceCard}>
+              <Text style={styles.attendanceStatus}>{shiftTime}</Text>
+              <Text style={styles.attendanceTitle}>🧹 Attendance & Gate Access</Text>
+              <View style={styles.actionRow}>
+                <TouchableOpacity style={[styles.actionBtn, checkedIn && styles.btnActiveGreen]} onPress={handleCheckIn} disabled={checkedIn}>
+                  <Text style={styles.actionBtnText}>{checkedIn ? "✓ Present" : "✓ Check In"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.actionBtn, buildingAccess ? styles.btnActiveBlue : styles.btnInactiveBorder]} onPress={toggleBuildingAccess}>
+                  <Text style={[styles.actionBtnText, !buildingAccess && { color: '#4b5563' }]}>
+                    {buildingAccess ? "🔓 Inside Building" : "🔒 Access Building"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-        {/* Status Section */}
-        <View style={styles.dutyCard}>
-          <Text style={styles.broomIcon}>🧹</Text>
-          <Text style={styles.workerName}>Maid Worker</Text>
-          <View style={[styles.statusIndicator, { backgroundColor: onDuty ? '#00C566' : '#FF4D4D' }]} />
-          <Text style={styles.statusLabel}>{onDuty ? 'On Duty' : 'Off Duty'}</Text>
-        </View>
+            {/* Quick Live Preview Banners */}
+            {maintenanceAlerts.slice(0, 1).map((alert, idx) => (
+              <View key={idx} style={styles.alertBanner}>
+                <Text style={styles.bannerIcon}>🔨</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.bannerTitle}>{alert.title}</Text>
+                  <Text style={styles.bannerBody}>{alert.description || ''}</Text>
+                </View>
+              </View>
+            ))}
 
-        {/* Primary Actions */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: '#635BFF' }]}
-            onPress={() => handleAttendance('in')}
-          >
-            <Text style={styles.btnText}>✅ Check In</Text>
-          </TouchableOpacity>
+            {/* Main Duties Section */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>📋 Today's Assigned Duties</Text>
+              {tasks.length === 0 ? (
+                <Text style={styles.emptyText}>No duties scheduled for today.</Text>
+              ) : (
+                tasks.slice(0, 3).map((task) => (
+                  <MaidTaskCard key={task.id} task={task} onAccept={acceptTask} onComplete={completeTask} />
+                ))
+              )}
+            </View>
+          </>
+        )}
 
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: '#635BFF' }]}
-            onPress={() => handleAttendance('out')}
-          >
-            <Text style={styles.btnText}>🏁 Check Out</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Assigned Apartments / Schedule */}
-        <Text style={styles.sectionTitle}>Today's Schedule</Text>
-
-        <View style={styles.scheduleItem}>
-          <View style={styles.aptCircle}>
-            <Text style={styles.aptText}>A1</Text>
+        {activeTab === 'tasks' && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>✅ All Tasks Registry</Text>
+            {tasks.length === 0 ? (
+              <Text style={styles.emptyText}>No duties linked to your profile.</Text>
+            ) : (
+              tasks.map((task) => (
+                <MaidTaskCard key={task.id} task={task} onAccept={acceptTask} onComplete={completeTask} />
+              ))
+            )}
           </View>
-          <View style={styles.aptInfo}>
-            <Text style={styles.aptName}>Apartment A-101</Text>
-            <Text style={styles.aptTime}>09:00 AM - 10:30 AM</Text>
-          </View>
-          <TouchableOpacity style={styles.doneBtn}>
-            <Text style={styles.doneText}>Done</Text>
-          </TouchableOpacity>
-        </View>
+        )}
 
-        <View style={styles.scheduleItem}>
-          <View style={styles.aptCircle}>
-            <Text style={styles.aptText}>B2</Text>
+        {activeTab === 'alerts' && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>🔔 Maintenance Notifications</Text>
+            {maintenanceAlerts.length === 0 ? (
+              <Text style={styles.emptyText}>No notices running today.</Text>
+            ) : (
+              maintenanceAlerts.map((alert, idx) => (
+                <View key={idx} style={[styles.alertBanner, { marginBottom: 10 }]}>
+                  <Text style={styles.bannerIcon}>🔨</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.bannerTitle}>{alert.title}</Text>
+                    <Text style={styles.bannerBody}>{alert.description || ''}</Text>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
-          <View style={styles.aptInfo}>
-            <Text style={styles.aptName}>Apartment B-202</Text>
-            <Text style={styles.aptTime}>11:00 AM - 12:30 PM</Text>
-          </View>
-          <View style={styles.pendingBadge}>
-            <Text style={styles.pendingText}>Pending</Text>
-          </View>
-        </View>
+        )}
 
       </ScrollView>
 
-      {/* Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={[styles.navIcon, { color: '#635BFF' }]}>🏠</Text>
-          <Text style={[styles.navLabel, { color: '#635BFF' }]}>Work</Text>
+      {/* ── TAB BAR OVERLAY (Bottom Navigation Area) ── */}
+      <View style={styles.tabbar}>
+        <TouchableOpacity style={[styles.tabItem, activeTab === 'home' && styles.tabItemActive]} onPress={() => setActiveTab('home')}>
+          <Text style={styles.tabIcon}>🏠</Text>
+          <Text style={[styles.tabLabel, activeTab === 'home' && styles.tabLabelActive]}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>📅</Text>
-          <Text style={styles.navLabel}>Log</Text>
+
+        <TouchableOpacity style={[styles.tabItem, activeTab === 'tasks' && styles.tabItemActive]} onPress={() => setActiveTab('tasks')}>
+          <Text style={styles.tabIcon}>✅</Text>
+          <Text style={[styles.tabLabel, activeTab === 'tasks' && styles.tabLabelActive]}>Tasks</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={handleExit}>
-          <Text style={styles.navIcon}>🚪</Text>
-          <Text style={styles.navLabel}>Exit</Text>
+
+        <TouchableOpacity style={[styles.tabItem, activeTab === 'alerts' && styles.tabItemActive]} onPress={() => setActiveTab('alerts')}>
+          <Text style={styles.tabIcon}>🔔</Text>
+          <Text style={[styles.tabLabel, activeTab === 'alerts' && styles.tabLabelActive]}>Alerts</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0B1223' },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#10182D'
-  },
-  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
-  headerSubtitle: { color: '#AEB8D0', fontSize: 12 },
-  exitButton: {
-    backgroundColor: '#FF4D4D',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 8
-  },
-  exitButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
-  scrollBody: { padding: 15 },
-  dutyCard: {
-    backgroundColor: '#161F35',
-    borderRadius: 20,
-    padding: 25,
-    alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#242F49'
-  },
-  broomIcon: { fontSize: 40, marginBottom: 10 },
-  workerName: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 10 },
-  statusIndicator: { width: 12, height: 12, borderRadius: 6, marginBottom: 5 },
-  statusLabel: { color: '#AEB8D0', fontSize: 12, fontWeight: '600' },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 },
-  actionBtn: { width: '48%', padding: 15, borderRadius: 12, alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: 'bold' },
-  sectionTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 15 },
-  scheduleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#161F35',
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 12
-  },
-  aptCircle: {
-    width: 45,
-    height: 45,
-    borderRadius: 23,
-    backgroundColor: '#242F49',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  aptText: { color: '#635BFF', fontWeight: 'bold' },
-  aptInfo: { flex: 1, marginLeft: 15 },
-  aptName: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  aptTime: { color: '#AEB8D0', fontSize: 12, marginTop: 2 },
-  doneBtn: { backgroundColor: '#00C56620', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  doneText: { color: '#00C566', fontSize: 12, fontWeight: 'bold' },
-  pendingBadge: { backgroundColor: '#FFB02020', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  pendingText: { color: '#FFB020', fontSize: 12, fontWeight: 'bold' },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#10182D',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#242F49'
-  },
-  navItem: { alignItems: 'center' },
-  navIcon: { fontSize: 22, color: '#717E95' },
-  navLabel: { fontSize: 10, color: '#717E95', marginTop: 4 }
+  container: { flex: 1, backgroundColor: '#f9fafb' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  scrollContainer: { padding: 16, paddingBottom: 80 },
+  attendanceCard: { backgroundColor: '#1e1b4b', borderRadius: 14, padding: 16, marginBottom: 16 },
+  attendanceStatus: { color: 'rgba(255, 255, 255, 0.6)', fontSize: 11, fontWeight: '600', marginBottom: 2 },
+  attendanceTitle: { color: '#fff', fontSize: 15, fontWeight: '800', marginBottom: 14 },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  actionBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  btnActiveGreen: { backgroundColor: '#22c55e' },
+  btnActiveBlue: { backgroundColor: '#3b82f6' },
+  btnInactiveBorder: { backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#d1d5db' },
+  actionBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  alertBanner: { flexDirection: 'row', backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: 1, padding: 12, borderRadius: 10, marginBottom: 16, alignItems: 'center' },
+  bannerIcon: { fontSize: 18, marginRight: 10 },
+  bannerTitle: { fontSize: 13, fontWeight: '700', color: '#1e40af' },
+  bannerBody: { fontSize: 11, color: '#1e3a8a', marginTop: 1 },
+  card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e5e7eb' },
+  cardTitle: { fontSize: 14, fontWeight: '700', color: '#1f2937', marginBottom: 14 },
+  emptyText: { color: '#9ca3af', fontSize: 12, textAlign: 'center', paddingVertical: 16 },
+  /* Bottom Tabbar Custom Overlay */
+  tabbar: { flexDirection: 'row', height: 60, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e5e7eb', position: 'absolute', bottom: 0, left: 0, right: 0, justifyContent: 'space-around', alignItems: 'center' },
+  tabItem: { alignItems: 'center', justifyContent: 'center', flex: 1, height: '100%' },
+  tabItemActive: { borderTopWidth: 2, borderTopColor: '#4f46e5' },
+  tabIcon: { fontSize: 18 },
+  tabLabel: { fontSize: 11, color: '#6b7280', fontWeight: '500', marginTop: 2 },
+  tabLabelActive: { color: '#4f46e5', fontWeight: '700' }
 });
