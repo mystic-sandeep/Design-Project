@@ -11,8 +11,7 @@ import {
   Alert,
   ActivityIndicator
 } from 'react-native';
-// Assuming theme.js exports primary, secondary, danger, success, and background colors
-import theme from '../../constants/theme';
+import { COLORS } from '../../constants/theme';
 
 export default function ResidentDashboard({ navigation }) {
   // Page Navigation Tab State

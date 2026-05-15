@@ -72,6 +72,7 @@ export default function OnboardingScreen({ navigation }) {
     setActivePicker(null);
   };
 
+
   const getDropdownOptions = () => {
     if (activePicker === 'units') return unitOptions;
     if (activePicker === 'role') return roleOptions;
@@ -89,7 +90,8 @@ export default function OnboardingScreen({ navigation }) {
         </View>
         <TouchableOpacity
           style={styles.btnNavLogin}
-          onPress={() => navigation.navigate('LoginScreen')}
+          onPress={() => navigation.navigate('Login')}
+
         >
           <Text style={styles.btnNavLoginText}>Login</Text>
         </TouchableOpacity>
@@ -113,7 +115,7 @@ export default function OnboardingScreen({ navigation }) {
           <View style={styles.heroActions}>
             <TouchableOpacity
               style={styles.btnHeroPrimary}
-              onPress={() => navigation.navigate('LoginScreen')}
+              onPress={() => navigation.navigate('Register')}
             >
               <Text style={styles.btnHeroPrimaryText}>Register Now</Text>
             </TouchableOpacity>

@@ -19,3 +19,21 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// Define the file path correctly outside the blocks
+def storageRepoPath = "${rootProject.projectDir}/../node_modules/@react-native-async-storage/async-storage/android/local_repo"
+def storageRepoFile = file(storageRepoPath)
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+
+        // Point Gradle to look locally inside node_modules safely
+        if (storageRepoFile.exists()) {
+            maven {
+                url storageRepoFile
+            }
+        }
+    }
+}

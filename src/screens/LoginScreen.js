@@ -1,3 +1,4 @@
+// src/screens/LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { COLORS } from '../constants/theme';
@@ -12,6 +13,8 @@ const roles = [
 
 const LoginScreen = ({ navigation }) => {
   const [selectedRole, setSelectedRole] = useState('resident');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   return (
     <ScrollView style={styles.container}>
@@ -20,10 +23,23 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.form}>
         <Text style={styles.label}>EMAIL ADDRESS</Text>
-        <TextInput style={styles.input} placeholder="you@example.com" />
+        <TextInput
+          style={styles.input}
+          placeholder="you@example.com"
+          placeholderTextColor="#9ca3af"
+          value={email}
+          onChangeText={setEmail}
+        />
 
         <Text style={styles.label}>PASSWORD</Text>
-        <TextInput style={styles.input} placeholder="Your password" secureTextEntry />
+        <TextInput
+          style={styles.input}
+          placeholder="Your password"
+          placeholderTextColor="#9ca3af"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
         <Text style={styles.label}>LOGIN AS</Text>
         <View style={styles.roleGrid}>
@@ -39,7 +55,10 @@ const LoginScreen = ({ navigation }) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.loginBtn}>
+        <TouchableOpacity
+          style={styles.loginBtn}
+          onPress={() => navigation.navigate('OTP', { role: selectedRole })}
+        >
           <Text style={styles.loginBtnText}>Login to Mygate</Text>
         </TouchableOpacity>
       </View>
@@ -51,15 +70,32 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.white, padding: 20 },
   title: { fontSize: 28, fontWeight: '800', color: COLORS.teal, marginTop: 40 },
   subtitle: { fontSize: 14, color: COLORS.gray, marginBottom: 30 },
+  form: { marginBottom: 40 },
   label: { fontSize: 12, fontWeight: '700', color: COLORS.gray, marginBottom: 8 },
-  input: { borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 10, padding: 12, marginBottom: 20 },
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#e5e7eb',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 20,
+    fontSize: 14,
+    color: COLORS.dark,
+  },
   roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 25 },
-  roleCard: { width: '30%', padding: 10, borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 10, alignItems: 'center' },
+  roleCard: {
+    width: '30%',
+    padding: 10,
+    borderWidth: 1.5,
+    borderColor: '#e5e7eb',
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   selectedCard: { borderColor: COLORS.teal, backgroundColor: '#e0f0f0' },
   roleIcon: { fontSize: 20 },
   roleLabel: { fontSize: 10, fontWeight: '600', marginTop: 5 },
   loginBtn: { backgroundColor: COLORS.teal, padding: 15, borderRadius: 10, alignItems: 'center' },
-  loginBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 16 }
+  loginBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
 });
 
 export default LoginScreen;

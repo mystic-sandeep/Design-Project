@@ -10,9 +10,7 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
-import Header from '../../components/Header'; // Using your existing Header component
-
-// Mocking the apiFetch and toast logic from your web dashboard's shared.js
+import Header from '../../components/Header';
 const apiFetch = async (url, options = {}) => {
   try {
     const response = await fetch(`https://your-api-base-url.com${url}`, options);
