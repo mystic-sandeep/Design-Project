@@ -13,7 +13,7 @@ import {
 import Header from '../../components/Header';
 const apiFetch = async (url, options = {}) => {
   try {
-    const response = await fetch(`https://your-api-base-url.com${url}`, options);
+    const response = await fetch(`https://jsonplaceholder.typicode.com${url}`, options);
     return await response.json();
   } catch (error) {
     console.error("API Error:", error);
@@ -171,6 +171,38 @@ export default function AdminDashboard({ navigation }) {
           </View>
         </View>
 
+        {/* ── 🚀 THIS IS THE ONLY ADDED BLOCK: THE 6 ACTION TABS 🚀 ── */}
+        <View style={styles.actionGrid}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('GuardStaffScreen')}>
+            <Text style={styles.actionBtnIcon}>🔧</Text>
+            <Text style={styles.actionBtnLabel}>Staff Log</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AdminPatrolScreen')}>
+            <Text style={styles.actionBtnIcon}>🗺️</Text>
+            <Text style={styles.actionBtnLabel}>Patrol</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AdminTasksScreen')}>
+            <Text style={styles.actionBtnIcon}>✅</Text>
+            <Text style={styles.actionBtnLabel}>Tasks</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.actionGrid}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('RegisterVisitorForm')}>
+            <Text style={styles.actionBtnIcon}>📝</Text>
+            <Text style={styles.actionBtnLabel}>Visitor</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('MaintenanceScreen')}>
+            <Text style={styles.actionBtnIcon}>🔨</Text>
+            <Text style={styles.actionBtnLabel}>Maintenance</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('RegistrationsScreen')}>
+            <Text style={styles.actionBtnIcon}>📋</Text>
+            <Text style={styles.actionBtnLabel}>Approvals</Text>
+          </TouchableOpacity>
+        </View>
+        {/* ───────────────────────────────────────────────────────── */}
+
         {/* ── RECENT TASKS PANEL ──────────────────────────────── */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -299,7 +331,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   statCard: {
     backgroundColor: '#fff',
@@ -423,4 +455,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+
+  /* --- THESE ARE THE ONLY NEW STYLES ADDED FOR THE ACTION GRID --- */
+  actionGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  actionBtn: { backgroundColor: '#fff', width: '31%', paddingVertical: 12, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#e5e7eb' },
+  actionBtnIcon: { fontSize: 18, marginBottom: 4 },
+  actionBtnLabel: { fontSize: 11, fontWeight: '600', color: '#111827' }
 });
